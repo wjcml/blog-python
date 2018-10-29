@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}栏目列表{% endblock %}
+
+{% block content %}
+<div class="container column-bg">
+    <table class="table table-hover" style="margin-top: 30px">
+        <tr style="color: #93a1a1">
+            <td class="col-md-2">序号</td>
+            <td class="col-md-6">栏目名称</td>
+            <td class="col-md-2 text-center">操作</td>
+            <td class="col-md-2 text-center">文章数</td>
+        </tr>
+        {% for column in columns %}
+        <tr>
+            <td class="col-md-2">{{ forloop.counter }}</td>
+            <td class="col-md-6">{{ column.column }}</td>
+            <td class="col-md-2 text-center">
+                <a name="edit" href="javascript:" onclick="edit_column(this, {{ column.id }})"><span class="glyphicon glyphicon-pencil"></span> </a>
+                <a name="delete" href="javascript:" onclick="del_column(this, {{ column.id }})"><span class="glyphicon glyphicon-trash" style="margin-left: 20px;"></span> </a>
+            </td>
+            <td class="col-md-2 text-center">--</td>
+        </tr>
+            {% empty %}
+            <p>博主太懒了，还没有栏目。</p>
+        {% endfor %}
+
+    </table>
+    <div class="text-center">
+        <button type="button" class="btn btn-primary" style="width: 100px;opacity:1.0;" title="添加栏目" onclick="add_column()"><span class="glyphicon glyphicon-plus"></span> </button>
+    </div>
+</div>
+    <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/layer.js' %}"></script>
+    <script type="text/javascript">
+    {#添加栏目#}
+    function add_column() {
+        var index = layer.open({
+            type:1,
+            skin:"layui-layer-rim",
+            area:["400px","200px"],
+            title:"新增栏目",
+            content:'<div class="text-center" style="margin-top:20px"><p>请输入新的栏目名称</p><p>{{ column_form.column }}</p></div>',
+            btn:['确定', '取消'],
+            yes:function (index, layero) {
+                column_name = $("#id_column").val();
+                $.ajax({
+                    url:'{% url "article_column" %}',
+                    type:"POST",
+                    data:{"column":column_name},
+                    success:function (e) {
+                        if(e=="1"){
+                            parent.location.reload();
+                            layer.msg("good");
+                        }else {
+                            layer.msg("此栏目已存在！");
+                        }
+                    },
+                });
+            },
+            btn2:function (index, layero) {
+                layer.close(index);
+            }
+        });
+    }
+
+    {#编辑栏目#}
+    function edit_column(the, column_id) {
+        var name = $(the).parents("tr").children("td").eq(1).text();
+        var index = layer.open({
+            type:1,
+            skin:"layui-layer-rim",
+            area:["400px", "200px"],
+            title:"编辑栏目",
+            content:'<div class="text-center" style="margin-top:20px;"><p>请编辑栏目名称</p><p><input type="text" id="new_name" value="'+name+'"></p></div>',
+            btn:["确定", "取消"],
+            yes:function (index, layero) {
+                new_name = $("#new_name").val();
+                $.ajax({
+                    url:"{% url 'rename_column' %}",
+                    type:"POST",
+                    data:{"column_name":new_name, "column_id":column_id},
+                    success:function (e) {
+                        if(e=="1"){
+                            parent.location.reload();
+                            layer.msg("good");
+                        }else {
+                            layer.msg("栏目名称未修改成功！");
+                        }
+                    },
+                });
+            },
+        });
+    }
+
+    {#删除栏目#}
+    function del_column(the, column_id){
+        var name = $(the).parents("tr").children("td").eq(1).text();
+        var index = layer.open({
+            type:1,
+            skin:"layui-layer-rim",
+            area:["400px", "200px"],
+            title:"删除栏目",
+            content:'<div class="text-center" style="margin-top:30px;"><p>确定删除  《'+name+'》  栏目</p></div>',
+            btn:["确定", "取消"],
+            yes:function () {
+                $.ajax({
+                    url:"{% url 'delete_column' %}",
+                    type:"POST",
+                    data:{"column_id": column_id},
+                    success:function (e) {
+                        if(e=="1"){
+                            parent.location.reload();
+                            layer.msg("删除成功");
+                        }else {
+                            layer.msg("删除失败");
+                        }
+                    },
+                });
+            },
+        });
+    }
+    </script>
+{% endblock %}

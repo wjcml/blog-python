@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}编辑个人信息{% endblock %}
+
+{% block content %}
+<div class="container column-bg">
+<div class="row text-center vertical-middle-sm">
+    <h2>编辑{{ user.username }}的个人信息</h2>
+    <hr>
+
+        <form class="form-horizontal" action="." method="post">{% csrf_token %}
+            <div class="row text-center vertical-middle-sm">
+                <div class="col-md-6" style="font-size: 18px">
+                <div class="row">
+                    <div class="col-md-4 text-right">用户名:</div>
+                    <div class="col-md-6 text-left" style="color:rgba(69,69,69,0.6)">{{ user.username }}</div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-4 text-right">邮箱:</div>
+                    <div class="col-md-6 text-left">{{ user_form.email }}</div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-4 text-right">电话:</div>
+                    <div class="col-md-6 text-left">{{ userinfo_form.phone }}</div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-4 text-right">生日:</div>
+                    <div class="col-md-6 text-left">{{ userinfo_form.birth }}</div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-4 text-right">毕业学校:</div>
+                    <div class="col-md-6 text-left">{{ userinfo_form.school }}</div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-4 text-right">公司:</div>
+                    <div class="col-md-6 text-left">{{ userinfo_form.company }}</div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-4 text-right">专业:</div>
+                    <div class="col-md-6 text-left">{{ userinfo_form.profession }}</div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-4 text-right">地址:</div>
+                    <div class="col-md-6 text-left">{{ userinfo_form.address }}</div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-4 text-right">自我简介:</div>
+                    <div class="col-md-6 text-left">{{ userinfo_form.aboutme }}</div>
+                </div>
+            </div>
+                <div class="col-md-6">
+                    <div style="margin-right: 100px;margin-top: 120px;">
+                        {% if userinfo.photo %}
+                            <img src="{{ userinfo.photo | striptags }}" class="img-circle" id="my_photo" name="user_face" onclick="upload_my_photo()" title="点击更换头像">
+                        {% else %}
+                            <img src="{% static 'images/default_user.jpg' %}" name="user_face" class="img-circle" width="150px" id="my_photo" onclick="upload_my_photo()" title="点击更换头像">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                    <input type="submit" class="btn btn-primary btn-lg" value="确认修改">
+                </div>
+        </form>
+    </div>
+</div>
+<script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/layer.js' %}"></script>
+    <script type="text/javascript">
+    function upload_my_photo() {
+        layer.open({
+            title:"上传头像",
+            area:['650px', '600px'],
+            type:2,
+            content:"{% url 'my_image' %}"
+        })
+    }
+    </script>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/bg.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+</head>
+<body style="background-color: whitesmoke">
+    {% include "header.html" %}
+{#    <div class="container" style="background-color: #fff">#}
+        {% block content %}{% endblock %}
+{#    </div>#}
+</body>
+</html>

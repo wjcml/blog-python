@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}收藏列表{% endblock %}
+
+{% block content %}
+<div class="container column-bg">
+    <table class="table table-hover" style="margin-top: 30px">
+        <tr style="color: #93a1a1">
+            <td class="col-md-2">序号</td>
+            <td class="col-md-6">收藏文章名称</td>
+            <td class="col-md-2 text-center">操作</td>
+        </tr>
+        {% for collection in collections %}
+        <tr id="{{ forloop.counter }}">
+            <td class="col-md-2">{{ forloop.counter }}</td>
+            <td class="col-md-6">{{ collection.title }}</td>
+            <td class="col-md-4 text-center">
+                <a name="delete" href="javascript:" onclick="del_collection(this, {{ collection.id }}, 'del_collect')"><span class="glyphicon glyphicon-trash"></span> </a>
+            </td>
+        </tr>
+            {% empty %}
+            <p>博主还没有收藏过其他文章。</p>
+        {% endfor %}
+
+    </table>
+{#    <div class="text-center">#}
+{#        <button type="button" class="btn btn-primary" style="width: 100px;opacity:1.0;" title="添加标签" onclick="add_tag()"><span class="glyphicon glyphicon-plus"></span> </button>#}
+{#    </div>#}
+</div>
+    <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/layer.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/csrf.js' %}"></script>
+    <script type="text/javascript">
+    function del_collection(the, collection_id, action) {
+        var collection_title = $(the).parents("tr").children("td").eq(1).text();
+        layer.open({
+            type:1,
+            skin:"layui-layer-rim",
+            area:["400px", "200px"],
+            title:"删除收藏",
+            content:'<div class="text-center" style="margin-top:30px;"><p>确认删除  '+collection_title+'  文章</p></div>',
+            btn:["确认", "取消"],
+            yes:function () {
+                $.ajax({
+                    url:"{% url 'article_collect' %}",
+                    type:"POST",
+                    data:{"id": collection_id, "action": action},
+                    success:function (e) {
+                        if(e=="2"){
+                            window.location.reload();
+                            layer.msg("删除成功");
+                        }else {
+                            layer.msg("删除失败");
+                        }
+                    }
+                });
+            }
+        });
+    }
+    </script>
+{% endblock %}

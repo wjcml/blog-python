@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}标签列表{% endblock %}
+
+{% block content %}
+<div class="container column-bg">
+    <table class="table table-hover" style="margin-top: 30px">
+        <tr style="color: #93a1a1">
+            <td class="col-md-2">序号</td>
+            <td class="col-md-6">标签名称</td>
+            <td class="col-md-2 text-center">操作</td>
+        </tr>
+        {% for article_tag in article_tags %}
+        <tr id="{{ forloop.counter }}">
+            <td class="col-md-2">{{ forloop.counter }}</td>
+            <td class="col-md-6">{{ article_tag.tag }}</td>
+            <td class="col-md-4 text-center">
+                <a name="delete" href="javascript:" onclick="del_tag(this, {{ article_tag.id }})"><span class="glyphicon glyphicon-trash"></span> </a>
+            </td>
+        </tr>
+            {% empty %}
+            <p>博主太懒了，还没有标签。</p>
+        {% endfor %}
+
+    </table>
+    <div class="text-center">
+        <button type="button" class="btn btn-primary" style="width: 100px;opacity:1.0;" title="添加标签" onclick="add_tag()"><span class="glyphicon glyphicon-plus"></span> </button>
+    </div>
+</div>
+    <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/layer.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/csrf.js' %}"></script>
+    <script type="text/javascript">
+    function add_tag() {
+       var index = layer.open({
+           type:1,
+           skin:"layui-layer-rim",
+           area:["400px", "200px"],
+           title:"添加标签",
+           content:'<div class="text-center" style="margin-top:20px;"><p>请输入新的标签名称</p><p>{{ article_tag_form.tag }}</p></div>',
+           btn:["确定", "取消"],
+           yes:function (index, layero) {
+               tag_name = $("#id_tag").val();
+               $.ajax({
+                   url:'{% url "article_tag" %}',
+                   type:"POST",
+                   data:{"tag": tag_name},
+                   success:function (e) {
+                       if(e=="1"){
+                           parent.location.reload();
+                           layer.msg("添加成功");
+                       }else {
+                           layer.msg("添加失败");
+                       }
+                   },
+               });
+           },
+           btn2: function (index,layero) {
+               layer.close(index);
+           }
+       });
+    }
+
+    function del_tag(the, tag_id) {
+        var article_tag = $(the).parents("tr").children("td").eq(1).text();
+        layer.open({
+            type:1,
+            skin:"layui-layer-rim",
+            area:["400px", "200px"],
+            title:"删除标签",
+            content:'<div class="text-center" style="margin-top:30px;"><p>确认删除  '+article_tag+'  标签</p></div>',
+            btn:["确认", "取消"],
+            yes:function () {
+                $.ajax({
+                    url:"{% url 'del_article_tag' %}",
+                    type:"POST",
+                    data:{"tag_id": tag_id},
+                    success:function (e) {
+                        if(e=="1"){
+                            window.location.reload();
+                            layer.msg("删除成功");
+                        }else {
+                            layer.msg("删除失败");
+                        }
+                    }
+                });
+            }
+        });
+    }
+    </script>
+{% endblock %}

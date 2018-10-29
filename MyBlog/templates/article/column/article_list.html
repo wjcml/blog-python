@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}博客列表{% endblock %}
+
+{% block content %}
+<div class="container column-bg">
+    <table class="table table-hover" style="margin-top: 20px">
+        <tr style="color: #93a1a1">
+            <td class="col-md-2">序号</td>
+            <td class="col-md-4">博客名称</td>
+            <td class="col-md-4">栏目</td>
+            <td class="col-md-2 text-center">操作</td>
+        </tr>
+        {% for article in articles %}
+
+        <tr>
+            <td class="col-md-2">{{ forloop.counter }}</td>
+            <td class="col-md-4"> <a href="{{ article.get_absolute_url }}">{{ article.title }}</a></td>
+            <td class="col-md-4">{{ article.column }}</td>
+            <td class="col-md-2 text-center">
+                <a href="{% url 'redit_article' article.id %}"><span class="glyphicon glyphicon-pencil"></span> </a>
+                <a name="delete" href="javascript:" onclick="delete_article(this, {{ article.id }})"><span class="glyphicon glyphicon-trash" style="margin-left: 20px;"></span> </a>
+            </td>
+        </tr>
+
+            {% empty %}
+            <p>博主还没有写过文章。</p>
+        {% endfor %}
+    </table>
+
+        {% if articles %}
+        <div class="col-md-12 column text-center" style="margin-top: 50px;">
+			<ul class="pagination">
+                {% if page.has_previous %}
+				    <li><a href="?page={{ page.previous_page_number }}">上一页</a></li>
+                {% else %}
+                    <li><a href="#">上一页</a></li>
+                {% endif %}
+
+                {% if page.paginator.num_pages >= 2 %}
+				    <li><a href="?page=1">1</a></li>
+                    <li><a href="?page=2">2</a></li>
+                {% else %}
+                    <li><a href="?page=1">1</a></li>
+                {% endif %}
+
+                {% if page.has_next %}
+                    <li><a href="?page={{ page.next_page_number }}">下一页</a></li>
+                {% else %}
+                    <li><a href="#">下一页</a></li>
+                {% endif %}
+                <li>
+                    <a href="?page={{ page.paginator.num_pages }}">尾页</a>
+                </li>
+			</ul>
+		</div>
+        {% endif %}
+
+</div>
+    <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/layer.js' %}"></script>
+    <script type="text/javascript">
+    function delete_article(the, article_id) {
+        var article_name = $(the).parents("tr").children("td").eq(1).text();
+        var index = layer.open({
+            type:1,
+            skin:"layui-layer-rim",
+            area:["400px", "200px"],
+            title:"删除文章",
+            content:'<div class="text-center" style="margin-top: 20px;"><p>确定删除文章  《'+article_name+'》</p></div>',
+            btn:["确定", "取消"],
+            yes:function () {
+                $.ajax({
+                    url:"{% url 'delete_article' %}",
+                    type:"POST",
+                    data:{"article_id": article_id},
+                    success:function (e) {
+                        if(e=="1"){
+                            parent.location.reload();
+                            layer.msg("删除成功");
+                        }else {
+                            layer.msg("删除失败");
+                        }
+                    }
+                });
+            },
+        });
+    }
+    </script>
+{% endblock %}

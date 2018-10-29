@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}首页{% endblock %}
+
+{% block content %}
+<div class="container column-bg" style="padding-top: 30px;">
+    <div class="col-md-9">
+        {% for article in articles %}
+        <div class="media well" style="padding-top: 10px;padding-bottom: 10px;">
+{#            <a href="{% url 'list_article_title' article.author.username %}" class="pull-left"><img src="{% static 'images/logo.jpg' %}" class="media-object" style="width: 50px;border-radius: 25px;" title="{{ article.author }}" /></a>#}
+            <div class="media-body">
+                <a href="{{ article.get_url_path }}"><h3 class="media-heading">{{ article.title }}</h3></a>
+                <p><a href="{{ article.get_url_path }}">{{ article.body|slice:'70'|linebreaks }}</a></p>
+                <div>
+                    <span>{{ article.created }}</span>
+                    <a href="{% url 'list_article_title' article.author.username %}"><span style="margin-left: 20px;">{{ article.author }}</span></a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if articles %}
+            <div class="col-md-12 column text-center" style="margin-top: 50px;">
+                <ul class="pagination">
+                    {% if page.has_previous %}
+                        <li><a href="?page={{ page.previous_page_number }}">上一页</a></li>
+                    {% else %}
+                        <li><a href="#">上一页</a></li>
+                    {% endif %}
+
+                    {% if page.paginator.num_pages >= 2 %}
+                        <li><a href="?page=1">1</a></li>
+                        <li><a href="?page=2">2</a></li>
+                    {% else %}
+                        <li><a href="?page=1">1</a></li>
+                    {% endif %}
+
+                    {% if page.has_next %}
+                        <li><a href="?page={{ page.next_page_number }}">下一页</a></li>
+                    {% else %}
+                        <li><a href="#">下一页</a></li>
+                    {% endif %}
+                    <li>
+                        <a href="?page={{ page.paginator.num_pages }}">尾页</a>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+
+    </div>
+    <div class="col-md-3">
+        <div style="background-color: whitesmoke;border: 1px solid rgba(169,169,169,0.3);border-radius: 5px;padding: 15px 25px 15px 25px;">
+            <p class="text-center" style="font-size: 17px;">最热文章</p>
+            <div>
+            <ol>
+                {% for article_rank in most_viewed %}
+                    <li><a href="{{ article_rank.get_url_path }}">{{ article_rank.title }}</a> </li>
+                {% endfor %}
+            </ol>
+            </div>
+        </div>
+        <div style="margin-top:15px;background-color: whitesmoke;border: 1px solid rgba(169,169,169,0.3);border-radius: 5px;padding: 15px 25px 15px 25px;">
+            <p class="text-center" style="font-size: 17px;">最新文章</p>
+            <div>
+            <ol>
+                {% for article_latest in article_title_latest %}
+                    <li><a href="{{ article_latest.get_url_path }}">{{ article_latest.title }}</a> </li>
+                {% endfor %}
+            </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
