@@ -28,7 +28,8 @@ REDIS_DB = 0
     ./manage.py create_testdata
 ### 开始运行：
  执行：
- `./manage.py runserver`
+  cmd执行`redis-server`
+ `python manage.py runserver`
 
 
 
