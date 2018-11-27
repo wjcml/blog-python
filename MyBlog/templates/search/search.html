@@ -4,28 +4,62 @@
 
 
 {% block content %}
-<div class="content-wrap">
+<div class="content-wrap container">
+{% if query %}
+    {% for blog in page.object_list %}
 
-{% for blog in page.object_list %}
+        <div>
+            <a href="{{ blog.object.get_url_path }}">
+                <h3>{{ forloop.counter }}、{% highlight blog.object.title with query %}</h3>
+            </a>
 
-    <div>
-        <a href="{% url 'blog_id' blog.object.id %}">
-            <h3>{{ forloop.counter }}、{% highlight blog.object.title with query %}</h3>
-        </a>
+            <div style="word-wrap: break-word">
+                {% highlight blog.object.body with query %}
+            </div>
 
-        <div style="word-wrap: break-word">
-            {% highlight blog.object.body with query %}
+
+            {% if forloop.counter == page.object_list|length %}
+                {% else %}
+                <hr>
+            {% endif %}
+        </div>
+    {% empty %}
+        <div class="no-post">没有搜索到相关内容，请重新搜索</div>
+    {% endfor %}
+
+    {% if page.object_list %}
+        <div class="text-center">
+            <ul class="pagination">
+                {% if page.has_previous %}
+                    <li><a href="?q={{ query }}&amp;page={{ page.previous_page_number }}">上一页</a></li>
+                {% else %}
+                    <li><a href="#">上一页</a></li>
+                {% endif %}
+
+                {% if page.paginator.num_pages >= 2 %}
+                    <li><a href="?q={{ query }}&amp;page=1">1</a></li>
+                    <li><a href="?q={{ query }}&amp;page=2">2</a></li>
+                {% else %}
+                    <li><a href="?q={{ query }}&amp;page=1">1</a></li>
+                {% endif %}
+
+                {% if page.has_next %}
+                    <li><a href="?q={{ query }}&amp;page={{ page.next_page_number }}">下一页</a></li>
+                {% else %}
+                    <li><a href="#">下一页</a></li>
+                {% endif %}
+                <li>
+                    <a href="?q={{ query }}&amp;page={{ page.paginator.num_pages }}">尾页</a>
+                </li>
+            </ul>
         </div>
 
-
-        {% if forloop.counter == page.object_list|length %}
-            {% else %}
-            <hr>
-        {% endif %}
-    </div>
-{% empty %}
-    <div class="no-post">没有搜索到相关内容，请重新搜索</div>
-{% endfor %}
-
+{#        <div class="text-center">#}
+{#            {% if page.has_previous %}<a href="?q={{ query }}&amp;page={{ page.previous_page_number }}">{% endif %}&laquo; 上一页{% if page.has_previous %}</a>{% endif %}#}
+{#        |#}
+{#            {% if page.has_next %}<a href="?q={{ query }}&amp;page={{ page.next_page_number }}">{% endif %}下一页 &raquo;{% if page.has_next %}</a>{% endif %}#}
+{#        </div>#}
+    {% endif %}
+{% endif %}
 </div>
 {% endblock %}

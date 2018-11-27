@@ -141,4 +141,4 @@ HAYSTACK_CONNECTIONS = {
 }
 # 添加此项，当数据库改变时，会自动更新索引，非常方便
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
-HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 2

@@ -40,13 +40,13 @@
 			</ul>
 
             <div class="profile navbar-right" style="margin-right: 20px;">
-{#            搜索框#}
-{#                <form action="{% url 'haystack_search' %}" class="navbar-form navbar-left">#}
-{#                    <div class="input-group">#}
-{#                        <input type="text" placeholder="search" class="form-control" />#}
-{#                    <span class="input-group-btn"><input type="submit" class="btn btn-default" value="GO!"></span>#}
-{#                    </div>#}
-{#			    </form>#}
+            #搜索框
+                <form action="{% url 'haystack_search' %}" method="get" class="navbar-form navbar-left">{% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" placeholder="search" class="form-control" name="q" />
+                    <span class="input-group-btn"><input type="submit" class="btn btn-default" value="GO!"></span>
+                    </div>
+			    </form>
                 <ul class="nav navbar-nav">
                 {% if user.is_authenticated %}
                     <li><a href="">{{ user.username }}</a> </li>

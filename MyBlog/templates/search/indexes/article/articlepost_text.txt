@@ -1,2 +1,3 @@
+{{ object.author }}
 {{ object.title }}
 {{ object.body }}
