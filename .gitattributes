@@ -1,5 +1,5 @@
-*.js linguist-language=javascript
+*.js linguist-language=python
 
-*.css linguist-language=python
+*.css linguist-language=javascript
 
 *.html linguist-language=python
