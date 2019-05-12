@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}编辑草稿{% endblock %}
+
+{% block main_body %}
+<!--标题-->
+<div>
+<el-row :gutter="20">
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="22">
+      <div class="grid-content bg-purple">
+        <el-form label-width="50px" v-model="article">
+          <el-form-item label="标  题">
+            <el-input v-model="article.article_title" placeholder="标题" clearable></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
+  </el-col>
+
+</el-row>
+</div>
+
+<!--内容-->
+<div>
+<el-row :gutter="20">
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="22"><div id="editormd" class="grid-content bg-purple" style="line-height: 15px;"><textarea style="display: none;" id="id_body">{{ draft.body }}</textarea></div></el-col>
+</el-row>
+</div>
+<div>
+<el-row :gutter="20">
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="2">
+      <div class="grid-content bg-purple" style="line-height: 15px;">
+          <el-row>
+            <el-button type="danger" @click="saveDialogVisible = true">保    存</el-button>
+          </el-row>
+      </div>
+  </el-col>
+  <el-col :span="20"><div class="grid-content bg-purple"></div></el-col>
+</el-row>
+</div>
+{% endblock %}
+{% block add_dialog %}
+
+<!--保存文章-->
+<el-dialog
+  title="保存文章"
+  :visible.sync="saveDialogVisible"
+  width="800px"
+  :show-close="show_close"
+  center
+  slot="empty">
+    <!--dialog中的dialog, 新增标签-->
+  <el-dialog
+      width="500px"
+      title="新增标签"
+      :visible.sync="newTagDialogVisible"
+      :show-close="show_close"
+      append-to-body
+      center>
+      <el-row :gutter="20">
+        <el-col :span="20" :offset="2">
+            <div class="grid-content bg-purple">
+                <label style="font-size: 16px;padding-right: 20px;">新增标签</label>
+                <el-input placeholder="请输入新标签" v-model="new_tag" clearable style="width: 250px"></el-input>
+            </div>
+        </el-col>
+      </el-row>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="danger" @click="add_new_tag">保  存</el-button>
+        <el-button @click="newTagDialogVisible = false">取  消</el-button>
+      </span>
+    </el-dialog>
+  <div>
+      <input type="hidden" v-model="checked_tags" id="checked_tags">
+      <el-row :gutter="20">
+        <el-col :span="18" :offset="3">
+            <div class="grid-content bg-purple">
+                <label style="font-size: 16px;padding-right: 20px;">标  签</label>
+                <el-select v-model="checked_tags" multiple filterable placeholder="请选择" style="width: 420px">
+                  <el-option
+                    v-for="item in tags"
+                    :key="item.tag_id"
+                    :label="item.tag_name"
+                    :value="item.tag_id">
+                  </el-option>
+                </el-select>
+                <el-button type="text" icon="el-icon-circle-plus" style="font-size: 20px;padding-left: 10px;" title="添加新标签" @click="newTagDialogVisible = true"></el-button>
+            </div>
+        </el-col>
+      </el-row>
+  </div>
+  <div>
+      <el-row :gutter="20">
+        <el-col :span="18" :offset="3">
+            <div class="grid-content bg-purple">
+                <label style="font-size: 16px;padding-right: 20px;">隐  私</label>
+                  <el-switch
+                    v-model="is_secret"
+                    active-text="设为隐私"
+                    inactive-text="非隐私">
+                  </el-switch>
+            </div>
+        </el-col>
+      </el-row>
+  </div>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="danger" @click="save_article">保  存</el-button>
+    <el-button type="danger" @click="save_draft" plain>保存为草稿</el-button>
+    <el-button @click="saveDialogVisible = false">取  消</el-button>
+  </span>
+</el-dialog>
+{% endblock %}
+
+{% block vue_data %}
+    saveDialogVisible:false,
+    newTagDialogVisible:false,
+    checked_tags:[],
+    tags: [
+        {% if tags %}
+            {% for tag in tags %}
+                {
+                    tag_id:'{{ tag.tag_id }}',
+                    tag_name:'{{ tag.tag_name }}'
+                },
+            {% endfor %}
+
+        {% endif %}
+    ],
+    is_secret:false,
+    new_tag:'',
+    article:{
+        article_title:'{{ draft.title }}',
+        article_body:'',
+    },
+{% endblock %}
+
+{% block vue_method %}
+add_new_tag: function(){
+    let vue = this;
+    $.ajax({
+        url:'{% url "article:add_new_tag" %}',
+        type: "POST",
+        data:{"new_tag": vue.new_tag, csrfmiddlewaretoken: '{{ csrf_token }}'},
+{#        headers:{"X_CSRFToken":'{{ csrf_token }}'},#}
+        success: function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                vue.newTagDialogVisible = false;
+                vue.tags = data.data;
+            }else{
+                vue.$message.error(data.msg)
+            }
+        },
+        error: function(data){
+            vue.$message.error("新增标签失败")
+        }
+    });
+},
+
+//保存博客
+save_article:function(){
+    let vue = this;
+    var article_body = $("#id_body").val();
+    var checked_tags = $("#checked_tags").val();
+    $.ajax({
+        url:'{% url "article:add_blog_article" %}',
+        type:"POST",
+        data:{"article_title": vue.article.article_title, "article_body": article_body, "checked_tags": checked_tags, "is_secret": vue.is_secret, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        dataType: "json",
+        success: function(data){
+            if(data.code){
+                vue.$message.success(data.msg)
+                setTimeout(function (){
+                    window.location.href='{% url "article:article_list" %}';
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg)
+            }
+        },
+        error:function(data){
+            vue.$message.error("出错啦")
+        },
+    });
+},
+
+<!--保存草稿-->
+save_draft:function(){
+    let vue = this;
+    var article_body = $("#id_body").val();
+    var checked_tags = $("#checked_tags").val();
+    $.ajax({
+        url:'{% url "article:edit_draft" draft.id %}',
+        type:"POST",
+        data:{"article_title": vue.article.article_title, "article_body": article_body, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        dataType: "json",
+        success: function(data){
+            if(data.code){
+                vue.$message.success(data.msg)
+                setTimeout(function (){
+                    window.location.href='{% url "article:draft_list" %}';
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg)
+            }
+        },
+        error:function(data){
+            vue.$message.error("出错啦")
+        },
+    });
+},
+{% endblock %}
+
+<!--设置markdown配置-->
+{% block script_function %}
+    $(function(){
+        var editor = editormd("editormd", {
+            width:"100%",
+            height:660,
+            syncScrolling:"single",
+            path:"{% static 'editor/lib/' %}"
+        });
+    });
+{% endblock %}

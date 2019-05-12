@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% load highlight %}
+
+{% block title %}首页{% endblock %}
+
+{% block edit_style %}
+.el-header {
+    background-color: #8c939d;
+    color: #333;
+    text-align: center;
+    line-height: 60px;
+    margin-top: -7px;
+    margin-right: -7px;
+    margin-left: -7px;
+    min-width: 1000px;
+  }
+
+  .el-main {
+    {#background-color: #E9EEF3;#}
+    color: #333;
+    text-align: center;
+    margin-right: -7px;
+    margin-left: -7px;
+    min-width: 1000px;
+  }
+
+    .el-aside {
+    {#background-color: #D3DCE6;#}
+    color: #333;
+    text-align: center;
+    margin-top: -7px;
+    margin-left: -7px;
+    min-width: 400px;
+  }
+
+{% endblock %}
+
+{% block aside %}
+    <el-aside width="25%">
+          {% include "left_home.html" %}
+      </el-aside>
+{% endblock %}
+
+{% block main_body %}
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple">
+          {% if query %}
+            {% for article in articles %}
+                <el-card shadow="hover" style="text-align: left;padding-bottom: 10px;margin-bottom: 5px;">
+                    <a href="{% url 'article:article_detail' article.id %}"><span style="font-size: 30px;">{{ article.title }}</span></a>
+                  <hr style="border-color: #bbccdd;">
+                  <div style="float: left">
+                      <p>
+{#                          {% highlight article.body with query %}#}
+                          {{ article.body|slice:'70' }}...
+                      </p>
+                      <a href="{% url 'article:other_article_list' article.author.id %}"><span style="color: #3a8ee6">{{ article.author.name }}</span></a> &nbsp;&nbsp;&nbsp;&nbsp;
+                      <span style="color: #8c939d">{{ article.updated|date:"Y-m-d" }}</span>
+                  </div>
+                </el-card>
+            {% empty %}
+                没找到相关内容
+            {% endfor %}
+
+          {% if articles %}
+            <br>
+            <div>
+                <el-row :gutter="20">
+                  <el-col :span="12" :offset="6">
+                      <div class="grid-content bg-purple">
+                          {% if page.has_previous %}
+                              <a href="?q={{ search }}&page={{ page.previous_page_number }}"><el-button type="info" plain size="medium">上一页</el-button></a>
+                          {% else %}
+                              <el-button type="info" plain disabled size="medium">上一页</el-button>
+                          {% endif %}
+                          {% if page.has_next %}
+                              <a href="?q={{ search }}&page={{ page.next_page_number }}"><el-button type="info" plain size="medium">下一页</el-button></a>
+                          {% else %}
+                              <el-button type="info" plain disabled size="medium">下一页</el-button>
+                          {% endif %}
+                      </div>
+                  </el-col>
+                </el-row>
+            </div>
+          {% endif %}
+            
+          {% endif %}
+
+      </div>
+  </el-col>
+</el-row>
+
+{% endblock %}
+
+{% block vue_data %}
+search_all:'{{ search }}',
+{% endblock %}

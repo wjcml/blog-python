@@ -1,0 +1,363 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {% block title %}
+            home
+        {% endblock %}
+    </title>
+    <link rel="icon" href="{% static 'images/wlbolog.png' %}" >
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="{% static 'editor/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'editor/css/editormd.css' %}">
+    <link rel="stylesheet" href="{% static 'editor/css/editormd.preview.css' %}">
+    {% block linkcss %}{% endblock %}
+    <!-- 引入组件库 -->
+    <script type="text/javascript" src="https://cdn.bootcss.com/vue/2.5.17-beta.0/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+{% block style %}
+<style>
+    {% block edit_style %}
+  .el-header {
+    background-color: #8c939d;
+    color: #333;
+    text-align: center;
+    line-height: 60px;
+    margin-top: -7px;
+    margin-right: -7px;
+    min-width: 1000px;
+  }
+
+  .el-aside {
+    {#background-color: #D3DCE6;#}
+    color: #333;
+    text-align: center;
+    margin-top: -7px;
+    margin-left: -7px;
+    min-width: 400px;
+  }
+
+  .el-main {
+    {#background-color: #E9EEF3;#}
+    color: #333;
+    text-align: center;
+    margin-right: -7px;
+    min-width: 1000px;
+  }
+    {% endblock %}
+
+  a{
+    text-decoration:none;
+    color: rgba(0,0,0,0.65);
+  }
+
+ .el-row {
+    margin-bottom: 20px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  .bg-purple-dark {
+    background: #99a9bf;
+  }
+  .grid-content {
+    min-height: 36px;
+  }
+{% block add_style %}
+{% endblock %}
+</style>
+{% endblock %}
+<body>
+<div id="app">
+    {% block container %}
+    <el-container>
+        {% block aside %}
+      <el-aside width="25%">
+          {% include "leftside.html" %}
+      </el-aside>
+        {% endblock %}
+      <el-container>
+        <el-header>{% include "header.html" %}</el-header>
+        <el-main>
+            {% block main_body %}
+            {% endblock %}
+        </el-main>
+      </el-container>
+    </el-container>
+    {% endblock %}
+
+<!-- 登录弹框 -->
+<el-dialog
+  title="登录"
+  :visible.sync="loginDialogVisible"
+  width="450px"
+  :show-close="show_close"
+  center>
+    <el-row>
+        <el-col :span="20">
+            <el-form :model="log" id="login">{% csrf_token %}
+                <el-form-item label="手机号" :label-width="loginLabelWidth">
+                  <el-input placeholder="手机号" name="phone" v-model="log.phone" autocomplete="off" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="密    码" :label-width="loginLabelWidth">
+                  <el-input placeholder="请输入密码" name="password" v-model="log.password" autocomplete="off" show-password clearable></el-input>
+                </el-form-item>
+            </el-form>
+        </el-col>
+    </el-row>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="primary" @click="sign_in">登 录</el-button>
+    <el-button @click="loginDialogVisible = false">取 消</el-button>
+  </span>
+</el-dialog>
+
+<!-- 注册弹框 -->
+<el-dialog
+  title="注册"
+  :visible.sync="resDialogVisible"
+  width="450px"
+  :show-close="show_close"
+  center>
+  <el-row>
+        <el-col :span="20">
+            <el-form :model="log" id="register">{% csrf_token %}
+                <el-form-item label="账    户" :label-width="loginLabelWidth">
+                  <el-input placeholder="账户" name="name" v-model="log.user" autocomplete="off" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="手机号" :label-width="loginLabelWidth">
+                  <el-input placeholder="手机号" name="phone" v-model="log.phone" autocomplete="off" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="密    码" :label-width="loginLabelWidth">
+                  <el-input placeholder="请输入密码" name="password" v-model="log.password" autocomplete="off" show-password clearable></el-input>
+                </el-form-item>
+                <el-form-item label="确认密码" :label-width="loginLabelWidth">
+                  <el-input placeholder="请输入密码" name="confirm_password" v-model="log.confirm_password" autocomplete="off" show-password clearable></el-input>
+                </el-form-item>
+            </el-form>
+        </el-col>
+    </el-row>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="primary" @click="sign_up()">注 册</el-button>
+    <el-button @click="resDialogVisible = false">取 消</el-button>
+  </span>
+</el-dialog>
+
+<!--关于本站-->
+<el-dialog
+  title="关于本站"
+  :visible.sync="AboutDialogVisible"
+  width="800px"
+  center
+  :show-close="show_close">
+  <span style="font-size: 16px">本站是一个博客系统</span>
+</el-dialog>
+
+<!--留言-->
+<el-dialog
+  title="留言"
+  :visible.sync="leaveMessageDialogVisible"
+  width="800px"
+  center
+  :show-close="show_close">
+  <el-row :gutter="20">
+    <el-col :span="20" :offset="2">
+        <div class="grid-content bg-purple">
+            <el-input type="textarea" autosize resize="none" placeholder="请输入您的留言" v-model="leaveMessage"></el-input>
+        </div>
+    </el-col>
+  </el-row>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="danger" @click="leave_message('{{ bloger.id }}')">留 言</el-button>
+    <el-button @click="leaveMessageDialogVisible = false">取 消</el-button>
+  </span>
+</el-dialog>
+{% block add_dialog %}
+{% endblock %}
+</div>
+
+</body>
+<script type="text/javascript" src="{% static 'js/jquery-3.3.1.js' %}"></script>
+<script type="text/javascript" src="{% static 'editor/editormd.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'editor/lib/marked.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'editor/lib/prettify.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'editor/lib/raphael.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'editor/lib/underscore.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'editor/lib/sequence-diagram.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'editor/lib/flowchart.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'editor/lib/jquery.flowchart.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'editor/editormd.js' %}"></script>
+{% block javascripts %}{% endblock %}
+<script>
+    var app = new Vue({
+        delimiters:['[[', ']]'],
+        el:"#app",
+        data() {
+            return {
+            {% block vue_data_function %}
+            {% endblock %}
+
+            loginDialogVisible:false,
+            resDialogVisible:false,
+            AboutDialogVisible:false,
+            leaveMessageDialogVisible:false,
+            show_close:false,
+            loginLabelWidth:'100px',
+            search_all:'',
+            leaveMessage:'',
+            message_num:'',
+            log:{
+                user:'',
+                password:'',
+                phone:'',
+                confirm_password:'',
+            },
+            {% block vue_data %}
+            {% endblock %}
+            }
+        },
+        created: function(){
+            {% block vue_created %}
+            {% endblock %}
+        },
+        mounted:function(){
+            let vue = this;
+            $.ajax({
+                url:'{% url "article:get_msg_num" %}',
+                type:"GET",
+                success:function (data) {
+                    if (data.code) {
+                        vue.message_num = data.message_num;
+                    }else {
+                        vue.message_num = ''
+                    }
+
+                },
+            });
+            {% block vue_mounted %}
+            {% endblock %}
+        },
+        methods:{
+            sign_in: function () {
+                let vue = this;
+                $.ajax({
+                    url: '{% url "user:login" %}',
+                    type: 'POST',
+                    data: $('#login').serialize(),
+                    success: function (data) {
+                        if (data.code) {
+                            vue.$message.success(data.msg);
+                            setTimeout(function (){
+                                window.location.reload();
+                            }, 1000);
+                        }else {
+                            vue.$message.error(data.msg);
+                        }
+                    },
+                    error: function (data) {
+                        vue.$message.error("登录失败")
+                    },
+                })
+            },
+            sign_up: function () {
+                let vue = this;
+                $.ajax({
+                    url: '{% url "user:register" %}',
+                    type: 'POST',
+                    data: $('#register').serialize(),
+                    success: function (data) {
+                        if (data.code) {
+                            vue.$message.success(data.msg);
+                            setTimeout(function (){
+                                window.location.reload();
+                            }, 1000);
+                        }else {
+                            vue.$message.error(data.msg)
+                        }
+                    },
+                    error: function (data) {
+                        vue.$message.error("注册失败")
+                    },
+                })
+            },
+            sign_down: function () {
+                let vue = this;
+                $.ajax({
+                    url: '{% url "user:logout" %}',
+                    type: 'GET',
+                    data: '1',
+                    success: function (data) {
+                        if (data.code) {
+                            vue.$message.success(data.msg);
+                            setTimeout(function (){
+                                window.location.reload();
+                            }, 1000);
+                        }else {
+                            vue.$message.error(data.msg)
+                        }
+                    },
+                    error: function (data) {
+                        vue.$message.error("退出登录失败")
+                    },
+                })
+            },
+            attention:function(bloger_id){
+                let vue = this;
+                $.ajax({
+                    url: '{% url "user:attention" %}',
+                    type: 'POST',
+                    data: {"bloger_id": bloger_id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                    success: function (data) {
+                        if (data.code) {
+                            vue.$message.success(data.msg);
+                            setTimeout(function (){
+                                window.location.reload();
+                            }, 1000);
+                        }else {
+                            vue.$message.error(data.msg)
+                        }
+                    },
+                    error: function (data) {
+                        vue.$message.error("订阅失败")
+                    },
+                });
+            },
+            leave_message:function(bloger_id){
+                let vue = this;
+                $.ajax({
+                    url: '{% url "user:leave_message" %}',
+                    type: 'POST',
+                    data: {"bloger_id": bloger_id, "leave_body": vue.leaveMessage, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                    success: function (data) {
+                        if (data.code) {
+                            vue.leaveMessageDialogVisible = false;
+                            vue.$message.success(data.msg);
+                        }else {
+                            vue.$message.error(data.msg)
+                        }
+                    },
+                    error: function (data) {
+                        vue.$message.error("订阅失败")
+                    },
+                });
+            },
+            {% block vue_method %}
+            {% endblock %}
+        },
+        computed:{
+            {% block vue_computed %}
+            {% endblock %}
+        },
+        watch:{
+            {% block vue_watch %}
+            {% endblock %}
+        },
+    });
+    {% block script_function %}
+
+    {% endblock %}
+</script>
+</html>

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}草稿箱{% endblock %}
+
+{% block main_body %}
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple">
+          {% for draft in drafts %}
+          <el-card shadow="hover" style="text-align: left">
+          <div style="float: left;">
+          <span style="font-size: 20px;">{{ forloop.counter }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <span style="font-size: 20px;">{{ draft.title }}</span>
+          </div>
+
+          <div style="float: right;margin-top: -5px;margin-bottom: 10px;">
+              <a href="{% url 'article:edit_draft' draft.id %}"><el-button plain size="medium">编&nbsp;&nbsp;辑</el-button></a>
+              <el-button type="danger" plain size="medium" @click="delete_draft('{{ draft.id }}')">删&nbsp;&nbsp;除</el-button>
+          </div>
+
+          </el-card>
+          {% empty %}
+          还没有草稿哟
+          {% endfor %}
+
+          {% if drafts %}
+              <br>
+          {% include "paginations.html" %}
+          {% endif %}
+
+
+      </div>
+  </el-col>
+</el-row>
+{% endblock %}
+
+{% block vue_method %}
+delete_draft:function(draft_id){
+    let vue = this;
+    $.ajax({
+        url:'{% url "article:delete_draft" %}',
+        type: "POST",
+        data:{"draft_id": draft_id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        success: function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.reload();
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg)
+            }
+        },
+        error: function(data){
+            vue.$message.error("出错啦")
+        }
+    });
+},
+{% endblock %}

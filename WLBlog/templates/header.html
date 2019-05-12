@@ -1,0 +1,53 @@
+{% load staticfiles %}
+<el-row>
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="1">
+      <div class="grid-content bg-purple">
+          <a href="{% url 'home' %}"><el-button type="text" style="font-size: 20px;color: #1A1A17">首页</el-button></a>
+      </div>
+  </el-col>
+  <el-col :span="2"><div class="grid-content bg-purple"><el-button type="text" style="font-size: 20px;color: #1A1A17" @click="AboutDialogVisible = true">关于本站</el-button></div></el-col>
+  <el-col :span="11"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="5">
+      <div class="grid-content bg-purple">
+          <form action="{% url 'article:haystack_search' %}" method="get">
+              <el-input name="q" placeholder="搜索文章" v-model="search_all" class="input-with-select">
+{#                <el-button slot="append" icon="el-icon-search"></el-button>#}
+              </el-input>
+          </form>
+
+      </div>
+  </el-col>
+  <el-col :span="3">
+      {% if user.is_authenticated %}
+          <div style="text-align: right;">
+            <el-dropdown split-button type="primary" trigger="click">
+              {{ user.name }}
+              <el-dropdown-menu slot="dropdown">
+                  <a href="{% url 'article:msg_list' %}">
+                    <el-dropdown-item>
+                        消息
+                        <el-badge class="mark" :value="message_num" />
+                    </el-dropdown-item>
+                  </a>
+                  <a href="{% url 'article:draft_list' %}"><el-dropdown-item>草稿箱</el-dropdown-item></a>
+                  <a href="{% url 'article:my_collection_list' %}"><el-dropdown-item>我的收藏</el-dropdown-item></a>
+                  <a href="{% url 'article:article_list' %}"><el-dropdown-item>博客列表</el-dropdown-item></a>
+                  <a href="{% url 'article:tags_list' %}"><el-dropdown-item>管理标签</el-dropdown-item></a>
+                  <a href="{% url 'article:add_blog_article' %}"><el-dropdown-item>写博客</el-dropdown-item></a>
+                  <a href="{% url 'article:archive_article' %}"><el-dropdown-item>归档</el-dropdown-item></a>
+                  <a href="{% url 'photo:photo_list' %}"><el-dropdown-item>相册</el-dropdown-item></a>
+                  <a href="{% url 'user:edit_user_information' %}"><el-dropdown-item>编辑个人信息</el-dropdown-item></a>
+                  <span @click="sign_down"><el-dropdown-item>退出登录</el-dropdown-item></span>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
+      {% else %}
+          <div class="grid-content bg-purple-light" style="text-align: right;">
+              <el-button type="text" @click="loginDialogVisible = true" style="font-size: 20px;font-family: 宋体;color: #000;">登录</el-button>
+              <el-button type="text" @click="resDialogVisible = true" style="font-size: 20px;font-family: 宋体;color: #000;">注册</el-button>
+          </div>
+      {% endif %}
+
+  </el-col>
+</el-row>

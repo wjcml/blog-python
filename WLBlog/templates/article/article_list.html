@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}我的博客列表{% endblock %}
+
+{% block main_body %}
+{% if articles %}
+
+{% for article in articles %}
+<el-row :gutter="20">
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="18">
+      <div class="grid-content bg-purple">
+          <el-card shadow="hover">
+              <div style="text-align: left;font-size: 36px;margin-top: -15px">
+                  {{ article.article.title }}
+              </div>
+              <div style="text-align: right;margin-top: -15px">
+{#                  <span style="color: #8c939d;"><i class="el-icon-view">&nbsp;&nbsp;20</i></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#}
+                  <span style="color: #8c939d;"><i class="el-icon-time">&nbsp;&nbsp;{{ article.article.created|date:"Y-m-d" }}</i></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  <span style="color: #8c939d;">By</span>&nbsp;
+                  <span style="color: #3a8ee6;">{{ article.article.author.name }}</span>
+              </div>
+              <hr style="background-color: #8e908c;">
+              <div style="text-align: left;">
+                  <div id="editormd-view{{ article.article.id }}" style="padding: 0px 0px;color: #8c939d;font-size: 16px;font-family: 微软雅黑">
+                  <textarea id="append-test" style="display: none;">{{ article.article.body|slice:'150' }}
+                  </textarea>
+
+                  </div>
+              </div>
+              <div style="text-align: left;margin-top: 30px;">
+                  <el-row>
+                      <a href="{% url 'article:article_detail' article.article.id %}"><el-button type="info">阅读更多</el-button></a>
+                  </el-row>
+              </div>
+              <hr>
+              <div style="text-align: left;">
+                  {% for tags in article.article_tags %}
+                  <a href="{% url 'article:get_tag_article' tags.tag.id %}"><el-tag type="danger">{{ tags.tag.tag }}</el-tag></a>
+                  {% endfor %}
+
+              </div>
+          </el-card>
+      </div>
+  </el-col>
+  <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+</el-row>
+
+{% endfor %}
+{% else %}
+<p>空空如也</p>
+{% endif %}
+
+
+<!--分页-->
+{% if articles %}
+<el-row :gutter="20">
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="18">
+      <div class="grid-content bg-purple">
+          {% include "paginations.html" %}
+      </div>
+  </el-col>
+  <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+</el-row>
+{% endif %}
+
+{% endblock %}
+
+{% block script_function %}
+$(function(){
+    {% for article in articles %}
+    editormd.markdownToHTML("editormd-view{{ article.article.id }}",{
+    htmlDecode:"style,script,iframe",   //过滤标签
+    emoji:true,
+    taskList:true,
+    tex:true,
+    flowChart:true,
+    sequenceDiagram:true,
+    });
+    {% endfor %}
+
+
+});
+{% endblock %}

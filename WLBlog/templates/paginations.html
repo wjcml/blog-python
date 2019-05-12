@@ -1,0 +1,20 @@
+{% load staticfiles %}
+<div>
+    <el-row :gutter="20">
+      <el-col :span="12" :offset="6">
+          <div class="grid-content bg-purple">
+              {% if page.has_previous %}
+                  <a href="?page={{ page.previous_page_number }}"><el-button type="info" plain size="medium">上一页</el-button></a>
+              {% else %}
+                  <el-button type="info" plain disabled size="medium">上一页</el-button>
+              {% endif %}
+              {% if page.has_next %}
+                  <a href="?page={{ page.next_page_number }}"><el-button type="info" plain size="medium">下一页</el-button></a>
+              {% else %}
+                  <el-button type="info" plain disabled size="medium">下一页</el-button>
+              {% endif %}
+          </div>
+      </el-col>
+    </el-row>
+</div>
+

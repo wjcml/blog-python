@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}留言{% endblock %}
+
+{% block main_body %}
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple">
+      <el-card shadow="always" style="text-align: left">
+          <el-collapse >
+              {% for leaf in leaves %}
+                  <span @click="show{{ leaf.id }} = false">
+                  <span @click="read_leaf('{{ leaf.id }}')">
+              <el-collapse-item name="{{ leaf.id }}">
+              <template slot="title">
+                 <h3>{{ leaf.leaver.name }}&nbsp;&nbsp;给您留言</h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span v-show="show{{ leaf.id }}" style="border: lime solid 5px;border-radius: 5px"></span>
+              </template>
+                <p style="font-size: 14px">{{ leaf.leave_body }}</p>
+              </el-collapse-item>
+                  </span>
+                  </span>
+              {% empty %}
+                  没有人给您留言呢
+              {% endfor %}
+
+          </el-collapse>
+      </el-card>
+      </div>
+  </el-col>
+</el-row>
+{% endblock %}
+
+{% block vue_data %}
+{% for leaf in leaves %}
+    {% if leaf.is_read == 0 %}
+    show{{ leaf.id }}:true,
+    {% else %}
+    show{{ leaf.id }}:false,
+    {% endif %}
+
+{% endfor %}
+{% endblock %}
+
+{% block vue_method %}
+read_leaf:function(leaf_id){
+    let vue = this;
+    $.ajax({
+        url:"{% url 'user:read_leaf' %}",
+        type:"POST",
+        data:{"leaf_id": leaf_id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        success:function(data){
+
+        },
+        error:function(data){
+            vue.$message.error("出错啦")
+        },
+    });
+},
+
+{% endblock %}

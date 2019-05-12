@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}文章详情{% endblock %}
+
+{% block main_body %}
+<el-row :gutter="20">
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="18">
+      <div class="grid-content bg-purple">
+          <el-card shadow="never">
+              <div style="text-align: left;font-size: 45px;margin-top: -15px">
+                  {{ article.title }}
+              </div>
+              <br>
+              <div style="text-align: right;margin-top: -15px">
+                  <span style="color: #8c939d;"><i class="el-icon-view" title="浏览量">&nbsp;&nbsp;{{ total_views }}</i></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  <span style="color: #8c939d;"><i class="el-icon-time">&nbsp;&nbsp;{{ article.created|date:"Y-m-d" }}</i></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  <span style="color: #8c939d;">By</span>&nbsp;
+                  <a href="{% url 'article:other_article_list' article.author.id %}"><span style="color: #3a8ee6;">{{ article.author.name }}</span></a>
+              </div>
+              <hr style="background-color: #8e908c;">
+              <div style="text-align: left;">
+                  <div id="editormd-view{{ article.id }}" style="padding: 0px 0px;color: rgba(0,0,0,0.8);font-size: 16px;font-family: 微软雅黑">
+                  <textarea id="append-test" style="display: none;">{{ article.body }}
+                  </textarea>
+                  </div>
+                  <br>
+                  <br>
+                  <el-input type="textarea" autosize resize="none" placeholder="对作者说点什么吧" v-model="new_comments" style="font-family: 微软雅黑;font-size: 16px;"></el-input>
+                  <div style="float: right;margin-top: 10px;margin-bottom: 20px;">
+                      <el-button type="danger" @click="add_new_comment">发表评论</el-button>
+                  </div>
+
+              </div>
+          </el-card>
+          <el-card shadow="never" style="text-align: left">
+              <h4 style="margin-top: 10px">评论</h4>
+              {% for comments in comment_detail %}
+                  {% if comments.comment %}
+                      <el-collapse v-model="comment_accordion" accordion>
+                          <el-collapse-item name="comment{{ comments.comment.id }}">
+                            <template slot="title">
+                              <h3>{{ comments.comment.commentator.name }}</h3>&nbsp;&nbsp;发表了评论
+                            </template>
+                            <el-row :gutter="20">
+                              <el-col :span="1"><div class="grid-content bg-purple"></div></el-col>
+                              <el-col :span="23">
+                                  <div class="grid-content bg-purple">
+                                        {{ comments.comment.comment_body }}
+                                        <div><el-button type="text" @click="comment_reply">回复</el-button></div>
+                                        <div v-show="comment_show">
+                                            <el-row :gutter="20">
+                                              <el-col :span="18">
+                                                  <div class="grid-content bg-purple">
+                                                      <el-input type="textarea" autosize placeholder="请输入内容" v-model="new_reply" resize="none"></el-input>
+                                                  </div>
+                                              </el-col>
+                                              <el-col :span="6"><div class="grid-content bg-purple">
+                                                  <el-button type="danger" size="small" @click="add_new_reply('{{ comments.comment.commentator.id }}', '{{ comments.comment.id }}')">回  复</el-button>
+                                                  <el-button type="danger" size="small" plain @click="comment_reply">取  消</el-button>
+                                              </div></el-col>
+                                            </el-row>
+
+                                        </div>
+
+                                  <!--回复-->
+                                      {% if comments.replies %}
+                                          {% for reply in comments.replies %}
+                                          <el-collapse>
+                                              <el-collapse-item name="reply{{ reply.id }}">
+                                                <template slot="title">
+                                                  <h3>{{ reply.replier.name }}</h3>&nbsp;&nbsp;回复了&nbsp;&nbsp;<h3>{{ reply.respondent.name }}</h3>
+                                                </template>
+                                                  {{ reply.reply_body }}
+                                                  <div><el-button type="text" @click="reply_reply">回复</el-button></div>
+                                                  <div v-show="reply_show">
+                                                      <el-row :gutter="20">
+                                                          <el-col :span="18">
+                                                              <div class="grid-content bg-purple">
+                                                                  <el-input type="textarea" autosize placeholder="请输入内容" v-model="new_reply_to_reply" resize="none"></el-input>
+                                                              </div>
+                                                          </el-col>
+                                                          <el-col :span="6"><div class="grid-content bg-purple">
+                                                              <el-button type="danger" size="small" @click="add_new_reply_to_reply('{{ reply.replier.id }}', '{{ comments.comment.id }}')">回  复</el-button>
+                                                              <el-button type="danger" size="small" plain @click="reply_reply">取  消</el-button>
+                                                          </div></el-col>
+                                                        </el-row>
+                                                  </div>
+                                              </el-collapse-item>
+                                          </el-collapse>
+                                          {% endfor %}
+                                      {% endif %}
+                                  </div>
+                              </el-col>
+                              <el-col :span="0"><div class="grid-content bg-purple"></div></el-col>
+                            </el-row>
+                          </el-collapse-item>
+                      </el-collapse>
+                  {% else %}
+                      还没有人评论哟
+                  {% endif %}
+              {% endfor %}
+
+          </el-card>
+{#          <el-card shadow="never">#}
+{#              相似的文章#}
+{#          </el-card>#}
+      </div>
+  </el-col>
+  <el-col :span="4">
+      <div class="grid-content bg-purple">
+          <el-card shadow="nerver" style="padding-bottom: 20px;text-align: left">
+                <h4 style="margin-top: 10px">文章标签</h4>
+              {% for article_tag in article_tags %}
+                  <div style="margin-top: 5px;float: left;margin-left: 5px"><a href="{% url 'article:get_tag_article' article_tag.tag.id %}"><el-tag type="danger">{{ article_tag.tag.tag }}</el-tag></a></div>
+
+              {% endfor %}
+                <p></p>
+          </el-card>
+      </div>
+  </el-col>
+</el-row>
+
+
+<!--转载|点赞|收藏|评论|返回顶部-->
+<div style="position: fixed;bottom: 100px;right: 100px;height: 44px;width: 44px;border-radius: 22px;box-shadow: 0px 0px 5px 0px;">
+<el-dropdown trigger="click" placement="top">
+  <span class="el-dropdown-link" style="font-size: 30px;color: #3a8ee6">
+    <i class="el-icon-caret-top"></i>
+  </span>
+  <el-dropdown-menu slot="dropdown" style="padding:0px 0px;overflow:hidden">
+  {% if user %}
+      {% if user.id == bloger.id %}
+        <a href="{% url 'article:edit_article' article.id %}"><el-dropdown-item>编辑</el-dropdown-item></a>
+{#        <el-dropdown-item divided disabled>转载</el-dropdown-item>#}
+        {% if is_like == 'false' %}
+        <span @click="add_click_like"><el-dropdown-item divided>点赞</el-dropdown-item></span>
+        {% else %}
+        <el-dropdown-item divided>已点赞</el-dropdown-item>
+        {% endif %}
+        <el-dropdown-item divided disabled>收藏</el-dropdown-item>
+        <el-dropdown-item divided disabled>评论</el-dropdown-item>
+        <el-dropdown-item divided>返回顶部</el-dropdown-item>
+      {% else %}
+{#        <el-dropdown-item>转载</el-dropdown-item>#}
+        {% if is_like == 'false' %}
+        <span @click="add_click_like"><el-dropdown-item>点赞</el-dropdown-item></span>
+        {% else %}
+        <el-dropdown-item>已点赞</el-dropdown-item>
+        {% endif %}
+        {% if is_collect == 'false' %}
+        <span @click="collect_article"><el-dropdown-item divided>收藏</el-dropdown-item></span>
+        {% else %}
+        <el-dropdown-item divided>已收藏</el-dropdown-item>
+        {% endif %}
+
+        <el-dropdown-item divided>评论</el-dropdown-item>
+        <el-dropdown-item divided>返回顶部</el-dropdown-item>
+      {% endif %}
+  {% else %}
+{#      <el-dropdown-item>转载</el-dropdown-item>#}
+      {% if is_like == 'false' %}
+        <span @click="add_click_like"><el-dropdown-item>点赞</el-dropdown-item></span>
+      {% else %}
+        <el-dropdown-item>已点赞</el-dropdown-item>
+      {% endif %}
+      {% if is_collect == 'false' %}
+      <span @click="collect_article"><el-dropdown-item divided>收藏</el-dropdown-item></span>
+      {% else %}
+      <el-dropdown-item divided>已收藏</el-dropdown-item>
+      {% endif %}
+      <el-dropdown-item divided>评论</el-dropdown-item>
+      <el-dropdown-item divided>返回顶部</el-dropdown-item>
+  {% endif %}
+  </el-dropdown-menu>
+</el-dropdown>
+</div>
+{% endblock %}
+
+{% block vue_data %}
+new_comments:'',
+new_reply:'',
+new_reply_to_reply:'',
+reply_show:false,
+comment_show:false,
+is_like:{{ is_like }},
+comment_accordion:'',
+{% endblock %}
+
+{% block vue_method %}
+<!--评论-->
+add_new_comment:function(){
+    let vue = this;
+    $.ajax({
+        url:'{% url "article:add_new_comment" %}',
+        type:"POST",
+        data:{'article_id':{{ article.id }}, 'author_id':{{ article.author.id }}, 'comment_body':vue.new_comments, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        success:function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.reload();
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg);
+            }
+        },
+        error:function(data){
+            vue.$message.error("出错啦")
+        }
+    });
+},
+
+<!--回复-->
+add_new_reply(commentator_id, comment_id){
+    let vue = this;
+    $.ajax({
+        url:'{% url "article:add_new_reply" %}',
+        type:"POST",
+        data:{'comment_id':comment_id, 'respondent_id':commentator_id, 'reply_body':vue.new_reply, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        success:function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.reload();
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg);
+            }
+        },
+        error:function(data){
+            vue.$message.error("出错啦")
+        }
+    });
+},
+
+<!--回复到回复-->
+add_new_reply_to_reply(replier_id, comment_id){
+    let vue = this;
+    $.ajax({
+        url:'{% url "article:add_new_reply" %}',
+        type:"POST",
+        data:{'comment_id':comment_id, 'respondent_id':replier_id, 'reply_body':vue.new_reply_to_reply, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        success:function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.reload();
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg);
+            }
+        },
+        error:function(data){
+            vue.$message.error("出错啦")
+        }
+    });
+},
+
+add_click_like:function(){
+    let vue = this;
+    $.ajax({
+        url:'{% url "article:click_like" article.id %}',
+        type:"POST",
+        data:{csrfmiddlewaretoken: '{{ csrf_token }}'},
+        success:function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.reload();
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg);
+            }
+        },
+        error:function(data){
+            vue.$message.error("出错啦")
+        }
+    });
+},
+
+collect_article:function(){
+    let vue = this;
+    $.ajax({
+        url:'{% url "article:collect_article" article.id %}',
+        type:"POST",
+        data:{csrfmiddlewaretoken: '{{ csrf_token }}'},
+        success:function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.reload();
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg);
+            }
+        },
+        error:function(data){
+            vue.$message.error("出错啦")
+        }
+    });
+},
+
+<!--回复框的显示-->
+comment_reply:function(){
+    this.comment_show = !this.comment_show;
+    this.new_reply = '';
+},
+
+<!--回复的回复框的显示-->
+reply_reply:function(){
+    this.reply_show = !this.reply_show;
+    this.new_reply_to_reply = '';
+},
+{% endblock %}
+
+{% block script_function %}
+$(function(){
+    editormd.markdownToHTML("editormd-view{{ article.id }}",{
+    htmlDecode:"style,script,iframe",   //过滤标签
+    emoji:true,
+    taskList:true,
+    tex:true,
+    flowChart:true,
+    sequenceDiagram:true,
+    });
+
+});
+{% endblock %}

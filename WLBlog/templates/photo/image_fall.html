@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}{{ user.name }}的相册{% endblock %}
+
+{% block add_style %}
+.outter{
+    width: 100%;
+    margin: 0;
+}
+.item{
+    width: 24%;
+    float: left;
+    margin:2px 3px;
+}
+.item img{
+    width: 100%;
+}
+{% endblock %}
+
+{% block main_body %}
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple">
+          <div class="outter">
+            <div class="item"></div>
+            <div class="item"></div>
+            <div class="item"> </div>
+            <div class="item"></div>
+          </div>
+      </div>
+  </el-col>
+</el-row>
+{% endblock %}
+
+{% block script_function %}
+$(function () {
+        var obj = new ScrollImg()
+        obj.initImg();
+        obj.scrollEvent();
+    })
+function ScrollImg(){
+        this.nid = 0;
+        this.lastPostion =3;
+        this.initImg = function (){
+            var that = this;
+            $.ajax({
+                url:'{% url "photo:img_fall" %}',
+                type:'GET',
+                data:{"nid":this.nid, "photo_id": '{{ photo_id }}'},
+                dataType:"JSON",
+                success:function (data) {
+                    if(data.code){
+                        var img_list = data.data;
+                        $.each(img_list,function(index,v){
+                            var eqv = (that.lastPostion+index+1)%4;
+                            var divd = $('.outter').children().eq(eqv)
+                            var tag = document.createElement('img')
+                            tag.src="http://{{ request.get_host }}/media/"+v.img_url
+                            tag.title=v.title
+                            var new_a = document.createElement('a')
+                            new_a.href="javascript:void(0)"
+                            new_a.append(tag)
+                            divd.append(new_a)
+                            //当列表的长度等于循环的index+1时候执行下一次循环
+                            if(index+1==img_list.length){
+                                    that.nid = v.id;
+                                   that.lastPostion =eqv;
+                            }
+                        })
+                    }
+                }
+            })
+
+};
+this.scrollEvent = function () {
+        var that =this;
+        $(window).scroll(function () {
+        //什么时候到达底部
+        //文档内容高度
+        var docHeight = $(document).height()
+        //窗口的高度
+        var winHeight = $(window).height()
+        //滑轮滚动高度
+        var scrollTop = $(window).scrollTop();
+        //滚动条长度+窗口高度等于 文本高度
+        if (winHeight+scrollTop == docHeight){
+            that.initImg();
+        }
+        })
+    }
+};
+{% endblock %}

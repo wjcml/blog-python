@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}{{ bloger.name }}的信息{% endblock %}
+
+{% block main_body %}
+<el-row :gutter="20">
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="20"  style="text-align: left">
+      <div class="grid-content bg-purple">
+          <el-row>
+            <el-col :span="16">
+                <div class="grid-content bg-purple">
+                    <el-card shadow="always">
+                      <span style="font-size: 40px;">Summary</span>
+                      <p style="line-height: 2;">
+                          {% if userinfo.summary %}
+                              {{ userinfo.summary }}
+                          {% else %}
+                              这个博主太懒了,还没有摘要呢
+                          {% endif %}
+                      </p>
+                    </el-card>
+                    <el-card shadow="always" style="margin-top: 20px;">
+                      <span style="font-size: 40px;">Social</span>
+                      <p>
+                          <span>GitHub:&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                          {% if userinfo.github %}
+                              <a href="https://github.com/{{ userinfo.github }}" style="color: #3a8ee6">https://github.com/{{ userinfo.github }}</a>
+                          {% else %}
+                              GitHub是什么
+                          {% endif %}
+                      </p>
+                      <p>
+                          <span>Email:&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                          {% if userinfo.email %}
+                              {{ userinfo.email }}
+                          {% else %}
+                              没有email
+                          {% endif %}
+                      </p>
+                    </el-card>
+
+                    <el-row style="margin-top: 20px;">
+                        <el-col :span="12">
+                            <div class="grid-content bg-purple">
+                                <el-card shadow="always">
+                                    <span style="font-size: 40px;">Address</span>
+                                    <p>
+                                        {% if userinfo.address %}
+                                              {{ userinfo.address }}
+                                        {% else %}
+                                             该博主不想透露他的籍贯呢
+                                        {% endif %}
+                                    </p>
+                                </el-card>
+                            </div>
+                        </el-col>
+                        <el-col :span="12"><div class="grid-content bg-purple-light"></div></el-col>
+                      </el-row>
+                </div>
+            </el-col>
+            <el-col :span="7" style="margin-left: 20px;">
+                <div class="grid-content bg-purple-light">
+                    <el-card shadow="always">
+                        <span style="font-size: 40px;">School</span>
+                        <p>
+                          {% if userinfo.school %}
+                              {{ userinfo.school }}
+                          {% else %}
+                              该博主不想透露他的学校
+                          {% endif %}
+                        </p>
+                    </el-card>
+                    <el-card shadow="always" style="margin-top: 20px;">
+                        <span style="font-size: 40px;">Interests</span>
+                        <p>
+                          {% if userinfo.interests %}
+                              {{ userinfo.interests }}
+                          {% else %}
+                              我的兴趣就是不告诉你我的信息
+                          {% endif %}
+                        </p>
+                    </el-card>
+                    <el-card shadow="always" style="margin-top: 20px;">
+                        <span style="font-size: 40px;">Skill</span>
+                        <p>
+                          {% if userinfo.skill %}
+                              {{ userinfo.skill }}
+                          {% else %}
+                              上天入地，无所不能
+                          {% endif %}
+                        </p>
+                    </el-card>
+                </div>
+            </el-col>
+          </el-row>
+
+
+
+      </div>
+  </el-col>
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+</el-row>
+{% endblock %}

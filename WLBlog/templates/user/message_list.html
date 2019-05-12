@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}消息列表{% endblock %}
+
+{% block main_body %}
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple">
+          {% for message in messages %}
+          <el-card shadow="never" style="text-align: left">
+              <span @click="show{{ message.id }} = false">
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ message.message_body }}&nbsp;&nbsp;&nbsp;
+                  {% if message.category == 0 %}
+                  <a href="{% url 'user:leave_message_list' %}"><el-button type="text" style="font-size: 14px;color: #8c939d;" @click="read_msg('{{ message.id }}')">(详情)</el-button></a>
+                  {% else %}
+                      <a href="{% url 'article:article_detail' message.article.id %}"><el-button type="text" style="font-size: 14px;color: #8c939d;" @click="read_msg('{{ message.id }}')">(详情)</el-button></a>
+                  {% endif %}
+
+                  <span v-show="show{{ message.id }}" style="font-size: 0px;border: lime solid 5px;border-radius: 5px;float: left;margin-top: 15px;"></span>
+              </span>
+          </el-card>
+          {% endfor %}
+      <br>
+      {% if messages %}
+        {% include "paginations.html" %}
+      {% endif %}
+      </div>
+  </el-col>
+</el-row>
+{% endblock %}
+
+{% block vue_data %}
+{% for message in messages %}
+    {% if message.is_read == 0 %}
+    show{{ message.id }}:true,
+    {% else %}
+    show{{ message.id }}:false,
+    {% endif %}
+{% endfor %}
+
+{% endblock %}
+
+{% block vue_method %}
+read_msg:function(msg_id){
+    let vue = this;
+    $.ajax({
+        url:'{% url "article:read_msg" %}',
+        type:'POST',
+        data:{"msg_id": msg_id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        success:function(data){
+
+        },
+        error:function(){
+            vue.$message.error("出错啦")
+        }
+    });
+},
+{% endblock %}

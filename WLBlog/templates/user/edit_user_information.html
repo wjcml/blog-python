@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}编辑个人信息{% endblock %}
+
+{% block add_style %}
+.avatar_span {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    width:160px;
+    height:160px;
+  }
+  .avatar_span:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 160px;
+    height: 178px;
+    line-height: 160px;
+    text-align: center;
+  }
+  .avatar {
+    opacity:0;
+    position:absolute;
+    width: 160px;
+    height: 160px;
+    text-align: center;
+
+  }
+{% endblock %}
+
+{% block main_body %}
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple">
+          <el-card shadow="always" style="margin-top: 30px;">
+              <el-row>
+                  <el-form id="user_info" ref="form" :model="form" label-width="80px" enctype="multipart/form-data">
+                  <el-col :span="1"><div class="grid-content bg-purple"></div></el-col>
+                  <el-col :span="9">
+                      <div class="grid-content bg-purple-light">
+{#                          <el-form id="user_info" ref="form" :model="form" label-width="80px">{% csrf_token %}#}
+                              <el-form-item label="用户名">
+                                <el-input name="name" v-model="form.name"></el-input>
+                              </el-form-item>
+                              <el-form-item label="电话">
+                                <el-input name="phone" v-model="form.phone" :disabled="true"></el-input>
+                              </el-form-item>
+                              <el-form-item label="性别">
+                                <input name="sex" type="hidden" v-model="form.sex">
+                                <el-select v-model="form.sex" placeholder="请选择性别" style="width: 100%">
+                                  <el-option label="男" value="男"></el-option>
+                                  <el-option label="女" value="女"></el-option>
+                                </el-select>
+                              </el-form-item>
+                              <el-form-item label="个性标签">
+                                <el-input name="Introduction" type="textarea" v-model="form.Introduction" resize="none" placeholder="一个随性的博主，不拘一格就是我的标签"></el-input>
+                              </el-form-item>
+                                <el-form-item label="头像" style="text-align: center">
+                                    <div class="avatar_span">
+                                        <input type="file" id="avatar" name="avatar" class="avatar" title="更换头像" v-model="imageUrl">
+                                        <img v-if="imageUrl" :src="imageUrl" id="img" style="width: 160px;height: 160px;">
+                                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                                    </div>
+
+                              </el-form-item>
+{#                          </el-form>#}
+                      </div>
+                  </el-col>
+                  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+                  <el-col :span="11">
+                      <div class="grid-content bg-purple-light">
+{#                          <el-form ref="form" :model="form" label-width="80px">#}
+                              <el-form-item label="学校">
+                                <el-input name="school" v-model="form.school" placeholder="学校"></el-input>
+                              </el-form-item>
+                              <el-form-item label="籍贯">
+                                <el-input name="address" v-model="form.address" placeholder="籍贯"></el-input>
+                              </el-form-item>
+                              <el-form-item label="GitHub">
+                                <el-input name="github" v-model="form.github" placeholder="GitHub"><template slot="prepend">https://github.com/</template></el-input>
+                              </el-form-item>
+                              <el-form-item label="Email">
+                                <el-input name="email" v-model="form.email"  placeholder="Email"></el-input>
+                              </el-form-item>
+                              <el-form-item label="兴趣爱好">
+                                <el-input name="interests" type="textarea" v-model="form.interests" resize="none" placeholder="赶快填写兴趣爱好吧，让大家更好地了解你"></el-input>
+                              </el-form-item>
+                              <el-form-item label="技能">
+                                <el-input name="skill" type="textarea" v-model="form.skill" resize="none" placeholder="赶快填写您的技能吧，让大家更好地了解你"></el-input>
+                              </el-form-item>
+                              <el-form-item label="摘要">
+                                <el-input name="summary" autosize type="textarea" v-model="form.summary" resize="none" placeholder="赶快填写摘要吧，让大家更好地了解你"></el-input>
+                              </el-form-item>
+{#                          </el-form>#}
+                      </div>
+                  </el-col>
+                  <el-col :span="1"><div class="grid-content bg-purple"></div></el-col>
+                  </el-form>
+              </el-row>
+
+              <el-row :gutter="20">
+                  <el-col :span="12" :offset="6"><div class="grid-content bg-purple">
+                      <el-button type="danger" plain @click="edit_user_info">保&nbsp;&nbsp;存</el-button>
+                  </div></el-col>
+              </el-row>
+
+          </el-card>
+      </div>
+  </el-col>
+</el-row>
+
+{% endblock %}
+
+{% block javascripts %}
+<script type="text/javascript" src="{% static 'js/csrf.js' %}"></script>
+{% endblock %}
+
+{% block vue_data %}
+    form:{
+        name:'{{ user.name }}',
+        phone:'{{ user.phone }}',
+        sex:'{{ user.get_sex_display }}',
+        Introduction:'{{ user.Introduction|default_if_none:"" }}',
+        school:'{{ userinfo.school|default_if_none:"" }}',
+        address:'{{ userinfo.address|default_if_none:"" }}',
+        github:'{{ userinfo.github|default_if_none:"" }}',
+        email:'{{ userinfo.email|default_if_none:"" }}',
+        interests:'{{ userinfo.interests|default_if_none:"" }}',
+        skill:'{{ userinfo.skill|default_if_none:"" }}',
+        summary:'{{ userinfo.summary|default_if_none:"" }}',
+    },
+    imageUrl:'',
+    avatar:'',
+{% endblock %}
+
+{% block vue_method %}
+edit_user_info:function(){
+    let vue = this;
+    var formData = new FormData();
+    formData.append('avatar', $('#avatar')[0].files[0]);
+    formData.append('name', vue.form.name);
+    formData.append('Introduction', vue.form.Introduction);
+    formData.append('sex', vue.form.sex);
+    formData.append('school', vue.form.school);
+    formData.append('address', vue.form.address);
+    formData.append('github', vue.form.github);
+    formData.append('email', vue.form.email);
+    formData.append('interests', vue.form.interests);
+    formData.append('skill', vue.form.skill);
+    formData.append('summary', vue.form.summary);
+    $.ajax({
+        url:'{% url "user:edit_user_information" %}',
+        type:"POST",
+{#        data: {'avatar': formData,'name': vue.form.name, 'sex': vue.form.sex, 'Introduction': vue.form.Introduction, 'school': vue.form.school, 'address': vue.form.address, 'github': vue.form.github, 'email': vue.form.email, 'interests': vue.form.interests, 'skill': vue.form.skill, 'summary': vue.form.summary, csrfmiddlewaretoken: '{{ csrf_token }}'},#}
+        data: formData,
+        processData: false,
+        contentType: false,
+        success:function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.href="{% url 'user:user_info' user.id %}";
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg)
+            }
+        },
+        error:function(data){
+            vue.$message.error("出错啦")
+        },
+    });
+},
+
+beforeAvatarUpload(file) {
+    const isJPG = file.type === 'image/jpeg';
+    const isLt2M = file.size / 1024 / 1024 < 2;
+
+    if (!isJPG) {
+      this.$message.error('上传头像图片只能是 JPG 格式!');
+    }
+    if (!isLt2M) {
+      this.$message.error('上传头像图片大小不能超过 2MB!');
+    }
+    return isJPG && isLt2M;
+},
+{% endblock %}
+
+{% block script_function %}
+$(function(){
+    $("#avatar").change(function(e){
+        var file = e.target.files[0];
+        var imgSrc;
+        if (!/image\/\w+/.test(file.type)) {
+                alert("看清楚，这个需要图片！");
+                return false;
+            }
+        var reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function() {
+                imgSrc = this.result;
+                $("#img").attr("src", imgSrc);
+            };
+    });
+})
+{% endblock %}

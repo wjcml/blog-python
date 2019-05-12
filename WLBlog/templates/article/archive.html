@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}归档{% endblock %}
+
+{% block main_body %}
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple" style="text-align: left">
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <a href="{% url 'article:archive_article' %}"><el-button type="danger" plain>按年归档</el-button></a>
+          <a href="{% url 'article:archive_article' 'month' %}"><el-button type="danger" plain>按月归档</el-button></a>
+      </div>
+  </el-col>
+</el-row>
+
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple" style="text-align: left">
+          <el-timeline>
+              <el-timeline-item timestamp="共有{{ count }}文章，继续努力" placement="top" size="large" type="primary">
+              </el-timeline-item>
+              {% for archive in archive_list %}
+{#              <span @click="show{{ archive.index }} = !show{{ archive.index }}">#}
+              <el-timeline-item timestamp="{{ archive.date }}" placement="top" size="large" type="primary">
+              </el-timeline-item>
+{#              </span>#}
+                  {% for article in archive.article_list %}
+                    <el-timeline-item timestamp="{{ article.created|date:'Y-m-d' }}" placement="top" v-show="show{{ archive.index }}">
+                      <el-card>
+                        <a href="{% url 'article:article_detail' article.id %}">
+                            <h4>
+                                {{ article.title }}{% if article.is_secret == 1 %}
+                                                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong class="el-icon-view" title="隐私文章" style="color: #3a8ee6"></strong>
+                                                   {% endif %}
+                            </h4>
+                        </a>
+
+                      </el-card>
+                    </el-timeline-item>
+                  {% endfor %}
+
+              {% empty %}
+                  您还没有文章呢，赶紧去添加文章吧
+              {% endfor %}
+
+
+          </el-timeline>
+      </div>
+  </el-col>
+</el-row>
+{% endblock %}
+
+{% block vue_data %}
+{% for archive in archive_list %}
+    show{{ archive.index }}:true,
+{% endfor %}
+
+{% endblock %}

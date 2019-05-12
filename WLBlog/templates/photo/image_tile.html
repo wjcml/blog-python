@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}{{ user.name }}的相册{% endblock %}
+
+{% block add_style %}
+.outter{
+    color: #8c939d
+    }
+{% endblock %}
+
+{% block main_body %}
+<el-row :gutter="20">
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="3">
+      <div class="grid-content bg-purple">
+          <el-select v-model="pic_select" @change="select_change">
+            <el-option
+              v-for="item in items"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+      </div>
+  </el-col>
+  <el-col :span="4">
+      <div class="grid-content bg-purple">
+          <el-cascader
+            placeholder="选择日期"
+            :options="options"
+            filterable
+            change-on-select
+            v-show="show"
+            v-model="date_select"
+            @visible-change="date_select_change"
+          ></el-cascader>
+      </div>
+  </el-col>
+  <el-col :span="13"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+</el-row>
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple">
+          <div class="outter" id="outter">
+
+          </div>
+      </div>
+  </el-col>
+</el-row>
+
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple">
+          <el-button type="text" v-if="pic_select == 'all'" @click="load">加载更多...</el-button>
+      </div>
+  </el-col>
+</el-row>
+
+{% endblock %}
+
+{% block add_dialog %}
+<el-dialog
+  title="查看图片"
+  :visible.sync="SeeDialogVisible"
+  width="600px"
+  :show-close="show_close"
+  center>
+  <el-row :gutter="20">
+    <el-col :span="3"><div class="grid-content bg-purple"></div></el-col>
+    <el-col :span="18">
+        <div class="grid-content bg-purple" style="text-align: center">
+            <img :src="click_img_url" width="100%">
+            <h1>[[ click_img_title ]]</h1>
+            <p>[[ click_description ]]</p>
+        </div>
+    </el-col>
+    <el-col :span="3"><div class="grid-content bg-purple"></div></el-col>
+  </el-row>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="danger" @click="SeeDialogVisible = false">确 定</el-button>
+    <el-button @click="SeeDialogVisible = false">取 消</el-button>
+  </span>
+</el-dialog>
+{% endblock %}
+
+{% block vue_data %}
+    SeeDialogVisible:false,
+    items:[{
+            value:'all',
+            label:'所有图片'
+        },{
+            value:'date',
+            label:'日期筛选'
+        }],
+    pic_select:'all',
+    show:false,
+    date_select:[],
+    checked_date:'',
+    nid:'',
+    click_img_title:'',
+    click_img_url:'',
+    click_description:'',
+    options: [
+        {% for date_list in date %}
+        {
+            value:'{{ date_list.year }}',
+            label:'{{ date_list.year }}',
+            children:[
+            {% for month in date_list.month %}
+                {
+                value:'{{ month }}',
+                label:'{{ month }}',
+                },
+            {% endfor %}
+            ],
+        },
+        {% endfor %}
+
+    ],
+
+{% endblock %}
+
+{% block vue_mounted %}
+this.get_img();
+{% endblock %}
+
+{% block vue_method %}
+select_change:function(){
+    let vue = this;
+    if(this.pic_select == 'date'){
+        this.show = true
+    }else{
+        this.show = false
+        vue.date_select = []
+        vue.checked_date = ''
+        vue.get_img();
+    }
+},
+
+date_select_change:function(val){
+    if(val == false){
+        let vue = this;
+        if(vue.date_select != []){
+            for(var i=0;i < vue.date_select.length;i++){
+                if(vue.date_select.length == 1){
+                    vue.checked_date = vue.date_select[0]
+                }else if(vue.date_select.length == 2){
+                    vue.checked_date = vue.date_select[0] + '-' + vue.date_select[1]
+                }else{
+                    vue.checked_date = vue.date_select[0] + '-' + vue.date_select[1] + '-' + vue.date_select[2]
+                }
+            }
+            console.log(vue.checked_date)
+            vue.get_img();
+        }
+
+    }
+},
+
+get_img:function(){
+    let vue = this;
+    vue.nid = 0;
+    vue.get_img_ajax();
+},
+
+get_img_ajax(){
+    let vue = this;
+    $.ajax({
+        url:'{% url "photo:img_tile" %}',
+        type:"GET",
+        data:{"nid":vue.nid, "checked_date": vue.checked_date, "photo_id": '{{ photo_id }}'},
+        dataType:"JSON",
+        success:function(data){
+            if(data.code){
+                let img_list = data.data;
+                $.each(img_list,function(index,v){
+                    var divd = $('.outter')
+                    var tag = document.createElement('img')
+                    tag.src="http://{{ request.get_host }}/media/"+v.img_url
+                    tag.title=v.title
+                    tag.style.cssText="height:50%;max-width:75%"
+                    new_p = document.createElement('p')
+                    new_p.append(v.title)
+                    var new_div = document.createElement('div')
+                    new_div.style.cssText="width:16%;height:150px;float:left;"
+                    new_div.onclick=function(){
+                            vue.click_img_title = v.title;
+                            vue.click_img_url = "http://{{ request.get_host }}/media/"+v.img_url;
+                            vue.click_description = v.description;
+                            vue.SeeDialogVisible = true;
+                        }
+                    new_div.append(tag)
+                    new_div.append(new_p)
+                    divd.append(new_div)
+                    //当列表的长度等于循环的index+1时候执行下一次循环
+                    if(index+1==img_list.length){
+                            vue.nid = v.id;
+                    }
+                })
+            }else{
+                vue.$message
+    ("没有更多图片了")
+            }
+        },
+    });
+},
+
+load:function(){
+    this.get_img_ajax();
+},
+{% endblock %}
+
+{% block vue_watch %}
+date_select:function(){
+    document.getElementById("outter").innerHTML = "";   //删除原来的元素
+    },
+{% endblock %}
+

@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}{{ user.name }}的相册{% endblock %}
+
+{% block main_body %}
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple" style="text-align: right">
+          <el-button type="danger" @click="NewDialogVisible = true">添加图片</el-button>
+      </div>
+  </el-col>
+</el-row>
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple">
+          <el-card shadow="never">
+              <el-table
+                :data="image_table"
+                stripe
+                style="width: 100%"
+                @row-click="getDetails">
+                <el-table-column
+                  type="index"
+                  min-width="25%"
+                  label="序号">
+                </el-table-column>
+                <el-table-column
+                  prop="image_name"
+                  min-width="25%"
+                  label="标题"
+                align="center">
+                </el-table-column>
+                <el-table-column
+                  prop="image_url"
+                  label="图片地址"
+                  min-width="25%"
+                align="center">
+                </el-table-column>
+                <el-table-column
+                  prop="do_something"
+                  label="操作"
+                min-width="25%"
+                align="center">
+                  <template slot-scope="scope">
+                    <el-button
+                      size="medium"
+                      @click="see_photo_img(scope.row)">查看</el-button>
+                    <el-button
+                      size="medium"
+                      type="danger"
+                      @click="deleteDialogVisible = true" plain>删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+          </el-card>
+          <br>
+          <div>
+    <el-row :gutter="20">
+      <el-col :span="12" :offset="6">
+          <div class="grid-content bg-purple">
+              {% if page.has_previous %}
+                  <a href="?photo_id={{ photo_id }}&page={{ page.previous_page_number }}"><el-button type="info" plain size="medium">上一页</el-button></a>
+              {% else %}
+                  <el-button type="info" plain disabled size="medium">上一页</el-button>
+              {% endif %}
+              {% if page.has_next %}
+                  <a href="?photo_id={{ photo_id }}&page={{ page.next_page_number }}"><el-button type="info" plain size="medium">下一页</el-button></a>
+              {% else %}
+                  <el-button type="info" plain disabled size="medium">下一页</el-button>
+              {% endif %}
+          </div>
+      </el-col>
+    </el-row>
+</div>
+      </div>
+  </el-col>
+</el-row>
+{% endblock %}
+
+{% block add_dialog %}
+<el-dialog
+  title="新增图片"
+  :visible.sync="NewDialogVisible"
+  width="600px"
+  :show-close="show_close"
+  center>
+  <el-row :gutter="20">
+    <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+    <el-col :span="16">
+        <el-form ref="form" :model="form" label-width="40px">{% csrf_token %}
+          <el-form-item label="名称">
+            <el-input v-model="form.title"></el-input>
+          </el-form-item>
+          <el-form-item label="图片">
+            <input type="file" id="photo_img" name="photo_img">
+          </el-form-item>
+          <el-form-item label="描述">
+            <el-input type="textarea" v-model="form.description" resize="none"></el-input>
+          </el-form-item>
+        </el-form>
+    </el-col>
+    <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+  </el-row>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="danger" @click="add_new_img">确 定</el-button>
+    <el-button @click="NewDialogVisible = false">取 消</el-button>
+  </span>
+</el-dialog>
+
+<el-dialog
+  title="查看图片"
+  :visible.sync="SeeDialogVisible"
+  width="600px"
+  :show-close="show_close"
+  center>
+  <el-row :gutter="20">
+    <el-col :span="3"><div class="grid-content bg-purple"></div></el-col>
+    <el-col :span="18">
+        <div class="grid-content bg-purple" style="text-align: center">
+            <img :src="this.photo_img_url" width="100%">
+            <h1>[[ photo_img_name ]]</h1>
+            <p>[[ description ]]</p>
+        </div>
+    </el-col>
+    <el-col :span="3"><div class="grid-content bg-purple"></div></el-col>
+  </el-row>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="danger" @click="SeeDialogVisible = false">确 定</el-button>
+    <el-button @click="SeeDialogVisible = false">取 消</el-button>
+  </span>
+</el-dialog>
+
+<el-dialog
+  title="删除图片"
+  :visible.sync="deleteDialogVisible"
+  width="600px"
+  :show-close="show_close"
+  center>
+  <el-row :gutter="20">
+    <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+    <el-col :span="16">
+        <div class="grid-content bg-purple">
+            <span style="font-size: 16px;">确定删除  [[photo_img_name]]  图片？</span>
+        </div>
+    </el-col>
+    <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+  </el-row>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="danger" @click="delete_photo_img">确 定</el-button>
+    <el-button @click="deleteDialogVisible = false">取 消</el-button>
+  </span>
+</el-dialog>
+{% endblock %}
+
+{% block vue_data %}
+    image_table:[
+    {% if photo_imgs != '' and photo_imgs != None and photo_imgs != undefined %}
+        {% for photo_img in photo_imgs %}
+            {
+            img_id:'{{ photo_img.id }}',
+            image_name:'{{ photo_img.title }}',
+            image_url:'{{ photo_img.img_url }}',
+            image_description:'{{ photo_img.description }}',
+            },
+        {% endfor %}
+    {% endif %}
+    ],
+    form:{
+        title:'',
+        description:'',
+    },
+    NewDialogVisible:false,
+    SeeDialogVisible:false,
+    deleteDialogVisible:false,
+    new_photo_img:'',
+    photo_img_id:'',
+    photo_img_name:'',
+    photo_img_url:'',
+    description:'',
+{% endblock %}
+
+{% block vue_method %}
+add_new_img: function(){
+    let vue = this;
+    var formData = new FormData();
+    formData.append('photo_img', $('#photo_img')[0].files[0]);
+    formData.append('title', vue.form.title);
+    formData.append('description', vue.form.description);
+    formData.append('photo_id', {{ photo_id }});
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    $.ajax({
+        url:'{% url "photo:add_photo_img" %}',
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.reload();
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg)
+            }
+        },
+        error: function(data){
+            vue.$message.error("新增图片失败")
+        }
+    });
+},
+
+delete_photo_img: function(){
+    let vue = this;
+    $.ajax({
+        url: '{% url "photo:delete_photo_img" %}',
+        type: 'POST',
+        data: {"photo_img_id": vue.photo_img_id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        success: function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.reload();
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg)
+            }
+        },
+        error: function(data){
+            vue.$message.error("删除图片失败")
+        }
+    });
+},
+
+see_photo_img(row){
+    this.SeeDialogVisible = true,
+    this.photo_img_url = 'http://' + '{{ request.get_host }}' + '/media/' + row.image_url,
+    this.photo_img_name = row.image_name,
+    this.description = row.image_description
+    },
+//row是整行信息
+getDetails(row){
+    this.photo_img_id = row.img_id,
+    this.photo_img_name = row.image_name
+  },
+{% endblock %}

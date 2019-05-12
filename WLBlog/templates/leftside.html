@@ -1,0 +1,56 @@
+{% load staticfiles %}
+<el-row>
+  <el-col :span="24">
+      <div class="grid-content bg-purple-dark" style="min-width:400px;position:fixed;height:100%;width:30%;background-image: url('{% static "images/background-cover.jpg" %}')">
+          <div style="height: 100%;background-color: rgba(0,0,0,0.4);line-height: 30px">
+            <div style="width: 100%;height: 100px;"></div>
+            <div style="width: 70%;height: 600px;min-width:350px;margin: 0 auto;">
+                <div style="width: 100%;height: 110px;">
+                    <a href="{% url 'user:user_info' bloger.id %}" style="height: 120px;margin: 0px 0px;">
+                        {% if bloger.avatar %}
+                        <img src="{{ bloger.avatar.avatar.url }}" style="width: 100px;height:100px;border-radius: 51.5px;border: white 3px solid;"><br>
+                        {% else %}
+                        <img src="{% static 'images/default_avatar.jpg' %}" style="width: 100px;border-radius: 51.5px;border: white 3px solid;"><br>
+                        {% endif %}
+
+                    </a>
+                </div>
+                <div style="height: 50px;font-size: 36px;color: white;">{{ bloger.name }}</div>
+                <hr style="width: 50%;">
+                <div style="width: 75%;height: 100px;margin: 0 auto;color: white">
+{#                    字体行间距太开#}
+                    <p>
+                        {% if bloger.Introduction %}
+                            {% if bloger.Introduction|length >= 30 %}
+                                {{ bloger.Introduction|slice:"30" }}...
+                            {% else %}
+                                {{ bloger.Introduction }}
+                            {% endif %}
+                        {% else %}
+                            一个随性的博主，不拘一格就是我的标签
+                        {% endif %}
+                    </p>
+                </div>
+                <div style="width: 100%;margin: 0 auto;">
+                    <el-row>
+                      <a href="{% url 'article:other_article_list' bloger.id %}"><el-button type="info" round plain>博客</el-button></a>
+                        {% if git.github %}
+                        <a href="https://github.com/{{ git.github }}"><el-button type="info" round plain>GitHub</el-button></a>
+                        {% else %}
+                        <el-button type="info" round plain title="该博主还没有填写他的github账号">GitHub</el-button>
+                        {% endif %}
+
+                      <el-button type="info" round plain @click="attention('{{ bloger.id }}')">订阅</el-button>
+                    {% if user == bloger %}
+                    <a href="{% url 'user:leave_message_list' %}"><el-button type="info" round plain>留言</el-button></a>
+                    {% else %}
+                    <el-button type="info" round plain @click="leaveMessageDialogVisible = true">留言</el-button>
+                    {% endif %}
+
+                    </el-row>
+                </div>
+            </div>
+          </div>
+      </div>
+  </el-col>
+</el-row>

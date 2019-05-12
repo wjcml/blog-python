@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}标签列表{% endblock %}
+
+{% block main_body %}
+<div>
+<el-row :gutter="20">
+  <el-col :span="20"><div class="grid-content bg-purple"></div></el-col>
+  <el-col :span="2">
+      <div class="grid-content bg-purple">
+          <el-button type="danger" @click="NewDialogVisible = true">新增标签</el-button>
+      </div>
+  </el-col>
+  <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+</el-row>
+</div>
+<div>
+<el-row :gutter="20">
+  <el-col :span="20" :offset="2">
+      <div class="grid-content bg-purple" style="line-height: 20px;">
+          <el-table
+            :data="tag_tableData"
+            stripe
+            style="width: 100%"
+            :default-sort = "{prop: 'tag_date', order: 'descending'}"
+            @row-click="getDetails">
+            <el-table-column
+              type="index"
+              min-width="25%"
+              label="序号">
+            </el-table-column>
+            <el-table-column
+              prop="tag_name"
+              min-width="25%"
+              label="标签"
+              sortable
+            align="center">
+            </el-table-column>
+            <el-table-column
+              prop="tag_date"
+              label="创建时间"
+              min-width="25%"
+              sortable
+            align="center">
+            </el-table-column>
+            <el-table-column
+              prop="do_something"
+              label="操作"
+            min-width="25%"
+            align="center">
+              <template slot-scope="scope">
+                <el-button
+                  size="medium"
+                  @click="EditDialogVisible = true">编辑</el-button>
+                <el-button
+                  size="medium"
+                  type="danger"
+                  @click="deleteDialogVisible = true" plain>删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+      </div>
+  </el-col>
+</el-row>
+</div>
+    {% include "paginations.html" %}
+
+{#<div>#}
+{#    <el-row :gutter="20">#}
+{#      <el-col :span="12" :offset="6">#}
+{#          <div class="grid-content bg-purple">#}
+{#              {% if page.has_previous %}#}
+{#                  <a href="?page={{ page.previous_page_number }}"><el-button type="info" plain>上一页</el-button></a>#}
+{#              {% else %}#}
+{#                  <el-button type="info" plain disabled>上一页</el-button>#}
+{#              {% endif %}#}
+{#              {% if page.has_next %}#}
+{#                  <a href="?page={{ page.next_page_number }}"><el-button type="info" plain>下一页</el-button></a>#}
+{#              {% else %}#}
+{#                  <el-button type="info" plain disabled>下一页</el-button>#}
+{#              {% endif %}#}
+{#          </div>#}
+{#      </el-col>#}
+{#    </el-row>#}
+{#</div>#}
+
+{% endblock %}
+
+{% block add_dialog %}
+<el-dialog
+  title="新增标签"
+  :visible.sync="NewDialogVisible"
+  width="600px"
+  :show-close="show_close"
+  center>
+  <el-row :gutter="20">
+    <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+    <el-col :span="16">
+        <div class="grid-content bg-purple">
+            <el-input placeholder="新标签名" v-model="new_tag" clearable></el-input>
+        </div>
+    </el-col>
+    <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+  </el-row>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="danger" @click="add_new_tag">确 定</el-button>
+    <el-button @click="NewDialogVisible = false">取 消</el-button>
+  </span>
+</el-dialog>
+
+<el-dialog
+  title="编辑标签"
+  :visible.sync="EditDialogVisible"
+  width="600px"
+  :show-close="show_close"
+  center>
+  <el-row :gutter="20">
+    <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+    <el-col :span="16">
+        <div class="grid-content bg-purple">
+            <el-input placeholder="标签名" v-model="tag_name" clearable></el-input>
+        </div>
+    </el-col>
+    <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+  </el-row>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="danger" @click="edit_tag">修 改</el-button>
+    <el-button @click="EditDialogVisible = false">取 消</el-button>
+  </span>
+</el-dialog>
+
+<el-dialog
+  title="删除标签"
+  :visible.sync="deleteDialogVisible"
+  width="600px"
+  :show-close="show_close"
+  center>
+  <el-row :gutter="20">
+    <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+    <el-col :span="16">
+        <div class="grid-content bg-purple">
+            <span style="font-size: 16px;">确定删除  [[tag_name]]  标签？</span>
+        </div>
+    </el-col>
+    <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+  </el-row>
+  <span slot="footer" class="dialog-footer">
+    <el-button type="danger" @click="delete_tag">确 定</el-button>
+    <el-button @click="deleteDialogVisible = false">取 消</el-button>
+  </span>
+</el-dialog>
+{% endblock %}
+
+{% block vue_data %}
+    tag_tableData:[
+    {% if tags != '' and tags != None and tags != undefined %}
+        {% for tag in tags %}
+            {
+            tag_id:'{{ tag.id }}',
+            tag_name:'{{ tag.tag }}',
+            tag_date:'{{ tag.created | date:"Y-m-d H:i:s" }}',
+            },
+        {% endfor %}
+    {% endif %}
+    ],
+    NewDialogVisible:false,
+    EditDialogVisible:false,
+    deleteDialogVisible:false,
+    new_tag:'',
+    tag_id:'',
+    tag_name:'',
+
+
+{% endblock %}
+
+{% block vue_method %}
+add_new_tag: function(){
+    let vue = this;
+    $.ajax({
+        url:'{% url "article:add_new_tag" %}',
+        type: "POST",
+        data:{"new_tag": vue.new_tag, csrfmiddlewaretoken: '{{ csrf_token }}'},
+{#        headers:{"X_CSRFToken":'{{ csrf_token }}'},#}
+        success: function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.reload();
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg)
+            }
+        },
+        error: function(data){
+            vue.$message.error("新增标签失败")
+        }
+    });
+},
+
+edit_tag: function(){
+    let vue = this;
+    $.ajax({
+        url: '{% url "article:edit_tag" %}',
+        type: 'POST',
+        data: {"tag_id": vue.tag_id, "tag_name": vue.tag_name, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        success: function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.reload();
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg)
+            }
+        },
+        error: function(data){
+            vue.$message.error("修改标签失败")
+        }
+    });
+},
+
+delete_tag: function(){
+    let vue = this;
+    $.ajax({
+        url: '{% url "article:delete_tag" %}',
+        type: 'POST',
+        data: {"tag_id": vue.tag_id, "tag_name": vue.tag_name, csrfmiddlewaretoken: '{{ csrf_token }}'},
+        success: function(data){
+            if(data.code){
+                vue.$message.success(data.msg);
+                setTimeout(function (){
+                    window.location.reload();
+                }, 1000);
+            }else{
+                vue.$message.error(data.msg)
+            }
+        },
+        error: function(data){
+            vue.$message.error("删除标签失败")
+        }
+    });
+},
+//row是整行信息
+getDetails(row){
+    this.tag_id = row.tag_id,
+    this.tag_name = row.tag_name
+  },
+
+{% endblock %}
