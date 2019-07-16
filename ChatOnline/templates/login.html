@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}login{% endblock %}
+
+{% block main_body %}
+<div class="container">
+   <div class="row">
+       <div class="col-md-3"></div>
+      <div class="col-md-6" style="height: 500px;">
+          <div class="panel panel-default" style="margin-top: 100px">
+                <div class="panel-heading" style="text-align: center;font-size: 20px">
+                    <span>
+                        登录
+                    </span>
+                </div>
+                <div class="panel-body">
+                    <form role="form" action="/login" method="post">
+{#                        <input type="hidden" name="crsf_token" value="{{csrf_token()}}">#}
+                      <div class="form-group">
+                        <label for="phone" class="control-label" style="font-size: 16px">手机号</label>
+                          <input type="text" class="form-control input-lg" id="phone" name="phone" placeholder="请输入手机号">
+                      </div>
+                      <div class="form-group">
+                        <label for="password" class="control-label" style="font-size: 16px">密码</label>
+                          <input type="password" class="form-control input-lg" id="password" name="password" placeholder="请输入密码">
+                      </div>
+                      <div class="form-group">
+                        <div style="text-align: center">
+                          <button type="submit" class="btn btn-primary btn-lg">登&nbsp;&nbsp;录</button>
+                        </div>
+                      </div>
+                    </form>
+                </div>
+              <div class="panel-footer" style="text-align: center;font-size: 16px">
+                  还没注册？<a href="/register"> <span>点击这里</span></a>注册
+                  <p>
+                      {% with messages = get_flashed_messages() %}
+                           {% if messages %}
+                              {% for message in messages %}
+                                 {{ message }}
+                              {% endfor %}
+                           {% endif %}
+                        {% endwith %}
+                  </p>
+              </div>
+            </div>
+      </div>
+       <div class="col-md-3"></div>
+   </div>
+</div>
+{% endblock %}

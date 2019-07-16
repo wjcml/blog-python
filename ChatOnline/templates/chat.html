@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}
+chat
+{% endblock %}
+
+{% block main_body %}
+    <div style="height: 50px;width: 100%;background-color: #8c8c8c">
+        <div style="float: right">
+            <a href="/logout"><button class="btn btn-info btn-lg">退出</button></a>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading" style="text-align: center">
+                        <h3 class="panel-title">
+                            聊天窗口
+                        </h3>
+                    </div>
+                    <div class="panel-body" id="chat-window">
+                        面板内容
+                    </div>
+                    <div class="panel-footer">
+                        <form role="form" class="form-inline">
+                          <div class="form-group">
+                              <input type="text" class="form-control" id="message" placeholder="消息">
+                              <button type="button" class="btn btn-info" id="btn_send">发送</button>
+                          </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block script_function %}
+<script type="application/javascript">
+    var ws_url = "ws://192.168.0.102:5000/chat-online/";
+    var ws = null;
+
+
+    $(function () {
+        ws = new WebSocket(ws_url);
+        console.log(ws);
+        ws.onmessage=function (serv_msg) {
+            msg = JSON.parse(serv_msg.data)
+            create_chart('y', msg)
+        };
+    });
+
+    function create_chart(self, content) {
+        if(self == "I"){
+            self = "right";
+            $("#chat-window").append("<p>"+content.send_msg+":"+content.send_user+"</p>")
+        }else {
+            self = "left";
+            $("#chat-window").append("<p>"+content.send_user+":"+content.send_msg+"</p>")
+        }
+    };
+
+    $("#btn_send").click(function () {
+        msg = $("#message").value;
+        console.log(ws);
+        ws.send(msg);
+        var s_msg = {"send_msg":msg};
+        create_chart('I', s_msg);
+        msg = '';
+    });
+</script>
+{% endblock %}

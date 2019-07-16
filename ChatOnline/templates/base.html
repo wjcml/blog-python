@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}ChatOnline{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.css') }}">
+    {% block link_css %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/jquery-3.1.1.js') }}"></script>
+</head>
+<body>
+{% block main_body %}
+
+{% endblock %}
+</body>
+<script src="{{ url_for('static', filename='bootstrap/bootstrap.js') }}"></script>
+{% block script %}
+
+{% endblock %}
+{% block script_function %}
+
+{% endblock %}
+</html>
